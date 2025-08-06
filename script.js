@@ -175,85 +175,92 @@ document.getElementById('exportarExcel').addEventListener('click', () => {
   const table = document.getElementById('real-table');
   const wb = XLSX.utils.book_new();
 
-  // Convertimos manualmente filas a JSON y convertimos valores numéricos
-  const data = [];
-  const rows = table.querySelectorAll("tbody tr");
-  const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-  data.push(headers);
+  // Obtener cabeceras
+  const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+  const data = [headers];
 
-  rows.forEach(row => {
-    const cells = Array.from(row.querySelectorAll("td")).map((td, index) => {
-      let val = td.textContent.trim();
+  // Obtener filas
+  table.querySelectorAll('tbody tr').forEach(row => {
+    const cells = row.querySelectorAll('td');
+    const rowData = [];
+    for (let i = 0; i < cells.length; i++) {
+      let val = cells[i].textContent.trim();
 
-      if (index > 0) { // columnas de Enero a Diciembre
-        // Convertimos "1.234,56" -> número real
-        val = val.replace(/\./g, "").replace(",", ".");
-        let num = parseFloat(val);
-        return isNaN(num) ? "" : num;
+      if (i > 0) {
+        // Convertir formato de número: '1.234,56' -> número
+        val = val.replace(/\./g, '').replace(',', '.');
+        val = parseFloat(val);
+        if (isNaN(val)) val = '';
       }
-      return val; // primera columna texto
-    });
-    data.push(cells);
+
+      rowData.push(val);
+    }
+    data.push(rowData);
   });
 
   const ws = XLSX.utils.aoa_to_sheet(data);
 
-  // Aplicar formato de número a todas las columnas excepto la primera
+  // Formato numérico para columnas excepto la primera
   const range = XLSX.utils.decode_range(ws['!ref']);
   for (let C = 1; C <= range.e.c; C++) {
     for (let R = 1; R <= range.e.r; R++) {
-      const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
-      if (ws[cellAddress] && typeof ws[cellAddress].v === 'number') {
-        ws[cellAddress].t = 'n'; 
-        ws[cellAddress].z = "#,##0.00"; // formato numérico con 2 decimales
+      const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+      if (ws[cellRef] && typeof ws[cellRef].v === 'number') {
+        ws[cellRef].t = 'n';
+        ws[cellRef].z = '#,##0.00'; // formato numérico
       }
     }
   }
 
-  XLSX.utils.book_append_sheet(wb, ws, "Gastos Reales");
-  XLSX.writeFile(wb, "GastosReales.xlsx");
+  XLSX.utils.book_append_sheet(wb, ws, 'Gastos Reales');
+  XLSX.writeFile(wb, 'GastosReales.xlsx');
 });
 
 // --- Importar Gastos Reales desde Excel ---
-document.getElementById('fileInput').addEventListener('change', (e) => {
+document.getElementById('importarExcel').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = e => {
     const data = new Uint8Array(e.target.result);
     const workbook = XLSX.read(data, { type: 'array' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    const realTable = document.querySelector('#real-table tbody');
-    const tableRows = realTable.rows;
+    const tableRows = document.querySelectorAll('#real-table tbody tr');
 
-    for (let i = 0; i < rows.length && i < tableRows.length; i++) {
-      const filaExcel = rows[i];
-
-      // ---- SALTAR FILAS DE ENCABEZADOS ----
-      if (filaExcel[0] && filaExcel[0].toString().toLowerCase().includes('enero')) continue;
-
+    // Saltar fila encabezado (fila 0), empezar en fila 1
+    for (let i = 0; i < tableRows.length && i + 1 < rows.length; i++) {
+      const filaExcel = rows[i + 1];
       const cells = tableRows[i].cells;
       for (let j = 1; j < cells.length && j < filaExcel.length; j++) {
         let valor = filaExcel[j];
-
-        // Si es número, lo convertimos al formato local "1.234,56"
         if (typeof valor === 'number') {
           valor = valor.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         } else if (typeof valor === 'string') {
-          // Si ya viene con coma y punto, lo dejamos tal cual
           valor = valor.trim();
+        } else {
+          valor = '';
         }
-
         cells[j].textContent = valor;
       }
     }
 
     saveRealTable();
-    alert("Datos importados correctamente");
+    alert('Datos importados correctamente.');
+    e.target.value = ''; // limpiar input para poder importar el mismo archivo varias veces si se quiere
   };
+
   reader.readAsArrayBuffer(file);
+});
+
+// --- Inicializar ---
+window.addEventListener('DOMContentLoaded', () => {
+  loadRealTable();
 });
