@@ -115,6 +115,20 @@ tbody td[contenteditable="true"]:focus {
     min-width: 700px;
   }
 }
-
+.acciones-excel {
+  margin: 10px 0;
+}
+.acciones-excel button {
+  margin-right: 8px;
+  padding: 6px 12px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.acciones-excel button:hover {
+  background: #0b59d1;
+}
 
 
