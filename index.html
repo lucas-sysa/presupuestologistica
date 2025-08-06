@@ -6,6 +6,7 @@
   <title>Presupuesto 2025</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
 <body>
   <h1>Presupuesto 2025</h1>
@@ -73,8 +74,12 @@
     </table>
   </div>
 
-  <!-- Gastos Reales -->
-  <h2>Gastos Reales</h2>
+ <h2>Gastos Reales</h2>
+  <div class="acciones-excel">
+    <button id="exportarExcel">Exportar a Excel</button>
+    <button id="importarExcel">Importar Excel</button>
+    <input type="file" id="fileInput" style="display:none;" />
+  </div>
   <div id="real-container">
     <table id="real-table">
       <thead>
@@ -124,9 +129,6 @@
     </tbody>
   </table>
 </div>
-
   <script src="script.js"></script>
 </body>
 </html>
-
-
