@@ -215,10 +215,6 @@ document.getElementById('exportarExcel').addEventListener('click', () => {
 });
 
 // --- Importar Gastos Reales desde Excel ---
-document.getElementById('importarExcel').addEventListener('click', () => {
-  document.getElementById('fileInput').click();
-});
-
 document.getElementById('fileInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -235,14 +231,29 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
     const tableRows = realTable.rows;
 
     for (let i = 0; i < rows.length && i < tableRows.length; i++) {
+      const filaExcel = rows[i];
+
+      // ---- SALTAR FILAS DE ENCABEZADOS ----
+      if (filaExcel[0] && filaExcel[0].toString().toLowerCase().includes('enero')) continue;
+
       const cells = tableRows[i].cells;
-      for (let j = 1; j < cells.length && j < rows[i].length; j++) {
-        cells[j].textContent = rows[i][j] || '';
+      for (let j = 1; j < cells.length && j < filaExcel.length; j++) {
+        let valor = filaExcel[j];
+
+        // Si es número, lo convertimos al formato local "1.234,56"
+        if (typeof valor === 'number') {
+          valor = valor.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else if (typeof valor === 'string') {
+          // Si ya viene con coma y punto, lo dejamos tal cual
+          valor = valor.trim();
+        }
+
+        cells[j].textContent = valor;
       }
     }
+
     saveRealTable();
     alert("Datos importados correctamente");
   };
   reader.readAsArrayBuffer(file);
 });
-
