@@ -174,7 +174,42 @@ window.addEventListener('DOMContentLoaded', () => {
 document.getElementById('exportarExcel').addEventListener('click', () => {
   const table = document.getElementById('real-table');
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.table_to_sheet(table);
+
+  // Convertimos manualmente filas a JSON y convertimos valores numéricos
+  const data = [];
+  const rows = table.querySelectorAll("tbody tr");
+  const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+  data.push(headers);
+
+  rows.forEach(row => {
+    const cells = Array.from(row.querySelectorAll("td")).map((td, index) => {
+      let val = td.textContent.trim();
+
+      if (index > 0) { // columnas de Enero a Diciembre
+        // Convertimos "1.234,56" -> número real
+        val = val.replace(/\./g, "").replace(",", ".");
+        let num = parseFloat(val);
+        return isNaN(num) ? "" : num;
+      }
+      return val; // primera columna texto
+    });
+    data.push(cells);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+
+  // Aplicar formato de número a todas las columnas excepto la primera
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let C = 1; C <= range.e.c; C++) {
+    for (let R = 1; R <= range.e.r; R++) {
+      const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
+      if (ws[cellAddress] && typeof ws[cellAddress].v === 'number') {
+        ws[cellAddress].t = 'n'; 
+        ws[cellAddress].z = "#,##0.00"; // formato numérico con 2 decimales
+      }
+    }
+  }
+
   XLSX.utils.book_append_sheet(wb, ws, "Gastos Reales");
   XLSX.writeFile(wb, "GastosReales.xlsx");
 });
@@ -210,3 +245,4 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   };
   reader.readAsArrayBuffer(file);
 });
+
