@@ -170,3 +170,43 @@ window.addEventListener('DOMContentLoaded', () => {
   calcularPresupuesto();
   loadRealTable();
 });
+// --- Exportar Gastos Reales a Excel ---
+document.getElementById('exportarExcel').addEventListener('click', () => {
+  const table = document.getElementById('real-table');
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.table_to_sheet(table);
+  XLSX.utils.book_append_sheet(wb, ws, "Gastos Reales");
+  XLSX.writeFile(wb, "GastosReales.xlsx");
+});
+
+// --- Importar Gastos Reales desde Excel ---
+document.getElementById('importarExcel').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    const realTable = document.querySelector('#real-table tbody');
+    const tableRows = realTable.rows;
+
+    for (let i = 0; i < rows.length && i < tableRows.length; i++) {
+      const cells = tableRows[i].cells;
+      for (let j = 1; j < cells.length && j < rows[i].length; j++) {
+        cells[j].textContent = rows[i][j] || '';
+      }
+    }
+    saveRealTable();
+    alert("Datos importados correctamente");
+  };
+  reader.readAsArrayBuffer(file);
+});
