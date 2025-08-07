@@ -130,5 +130,28 @@ tbody td[contenteditable="true"]:focus {
 .acciones-excel button:hover {
   background: #0b59d1;
 }
+#diferencia-table tbody td {
+  text-align: right;
+  padding: 6px 10px;
+}
 
+#diferencia-table tbody tr td:not(:first-child) {
+  font-weight: 600;
+}
 
+#diferencia-table tbody tr td.positivo {
+  color: green;
+}
+
+#diferencia-table tbody tr td.negativo {
+  color: red;
+}
+#diferencia-table tbody tr td.positivo {
+  color: #2e7d32; /* verde oscuro tenue */
+  background-color: #d0f0c0; /* verde claro tenue */
+}
+
+#diferencia-table tbody tr td.negativo {
+  color: #c62828; /* rojo oscuro tenue */
+  background-color: #f8d7da; /* rojo claro tenue */
+}
