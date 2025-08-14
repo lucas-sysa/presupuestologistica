@@ -1,4 +1,4 @@
-// --- Parsear y formatear números ---
+// --- Funciones de parseo y formateo ---
 function parseNumber(str) {
   if (!str) return 0;
   return Number(str.replace(/\./g, '').replace(',', '.')) || 0;
@@ -6,274 +6,191 @@ function parseNumber(str) {
 
 function formatNumber(num) {
   return num
-    .toFixed(2) // fuerza 2 decimales
-    .replace('.', ',') // cambia el punto decimal por coma
-    .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // agrega puntos como separadores de miles
+    .toFixed(2)
+    .replace('.', ',')
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
+// --- Inflación ---
+function saveInflacion(data) { localStorage.setItem('inflacionProyectada', JSON.stringify(data)); }
+function loadInflacion() { return JSON.parse(localStorage.getItem('inflacionProyectada')) || null; }
 
-// --- Guardar / Cargar inflación editable ---
-function saveInflacion(data) {
-  localStorage.setItem('inflacionProyectada', JSON.stringify(data));
-}
-
-function loadInflacion() {
-  return JSON.parse(localStorage.getItem('inflacionProyectada')) || null;
-}
-
-// --- Leer inflación desde tabla (editable) ---
 function getInflacionMeses() {
-  const premisasTable = document.getElementById('premisas-table');
-  const inflacionFila = premisasTable.querySelectorAll('tbody tr')[0];
+  const inflacionFila = document.querySelector('#premisas-table tbody tr:first-child');
   const inflacionValores = [];
-
   for (let i = 1; i < inflacionFila.cells.length; i++) {
-    let val = inflacionFila.cells[i].textContent.trim().replace('%', '').replace(',', '.');
-    inflacionValores.push(parseFloat(val) / 100);
+    let val = inflacionFila.cells[i].textContent.trim().replace('%','').replace(',', '.');
+    inflacionValores.push(parseFloat(val)/100);
   }
   return inflacionValores;
 }
 
-// --- Aplicar inflación al presupuesto ---
 function calcularPresupuesto() {
-  const tabla = document.getElementById('presupuesto-table');
-  const filas = tabla.tBodies[0].rows;
+  const filas = document.querySelectorAll('#presupuesto-table tbody tr');
   const inflacion = getInflacionMeses();
-
-  for (let i = 0; i < filas.length; i++) {
-    const celdas = filas[i].cells;
-    const valorAnterior = parseNumber(celdas[1].textContent); // Gastos Mes Anterior
-    let nuevoValor = valorAnterior;
-
+  filas.forEach(fila => {
+    const celdas = fila.cells;
+    let nuevoValor = parseNumber(celdas[1].textContent);
     for (let mes = 1; mes <= 12; mes++) {
-      nuevoValor = nuevoValor * (1 + inflacion[mes - 1]);
-      celdas[mes + 1].textContent = formatNumber(nuevoValor); // columna 2 en adelante
+      nuevoValor = nuevoValor * (1 + inflacion[mes-1]);
+      celdas[mes+1].textContent = formatNumber(nuevoValor);
     }
-  }
+  });
 }
 
-// --- Hacer editable la fila inflación ---
 function habilitarEdicionInflacion() {
-  const premisasTable = document.getElementById('premisas-table');
-  const inflacionFila = premisasTable.querySelectorAll('tbody tr')[0];
-
-  for (let i = 1; i < inflacionFila.cells.length; i++) {
+  const inflacionFila = document.querySelector('#premisas-table tbody tr:first-child');
+  for (let i=1;i<inflacionFila.cells.length;i++) {
     const celda = inflacionFila.cells[i];
-    celda.contentEditable = 'true';
-    celda.title = "Editar inflación (%)";
-
-    celda.addEventListener('blur', () => {
-      let val = celda.textContent.trim().replace('%', '').replace(/[^\d,\.]/g, '');
-      if (val === '') val = '0';
-      val = val.replace('.', ',');
-      celda.textContent = val + '%';
+    celda.contentEditable='true';
+    celda.title="Editar inflación (%)";
+    celda.addEventListener('blur',()=>{
+      let val = celda.textContent.trim().replace('%','').replace(/[^\d,\.]/g,'');
+      if(val==='') val='0';
+      celda.textContent = val.replace('.',',')+'%';
       guardarInflacionDesdeTabla();
       calcularPresupuesto();
       savePresupuestoBase();
     });
-
-    celda.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        celda.blur();
-      }
-    });
+    celda.addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault(); celda.blur();}});
   }
 }
 
-// --- Guardar inflación editada desde la tabla ---
 function guardarInflacionDesdeTabla() {
-  const premisasTable = document.getElementById('premisas-table');
-  const inflacionFila = premisasTable.querySelectorAll('tbody tr')[0];
-  const datosInflacion = [];
-
-  for (let i = 1; i < inflacionFila.cells.length; i++) {
-    let val = inflacionFila.cells[i].textContent.trim().replace('%', '').replace(',', '.');
-    datosInflacion.push(val);
+  const inflacionFila = document.querySelector('#premisas-table tbody tr:first-child');
+  const datos = [];
+  for(let i=1;i<inflacionFila.cells.length;i++){
+    let val = inflacionFila.cells[i].textContent.trim().replace('%','').replace(',', '.');
+    datos.push(val);
   }
-
-  saveInflacion(datosInflacion);
+  saveInflacion(datos);
 }
 
-// --- Cargar inflación guardada y actualizar tabla ---
 function cargarInflacionGuardada() {
-  const datosGuardados = loadInflacion();
-  if (!datosGuardados) return;
-
-  const premisasTable = document.getElementById('premisas-table');
-  const inflacionFila = premisasTable.querySelectorAll('tbody tr')[0];
-
-  for (let i = 1; i < inflacionFila.cells.length; i++) {
-    if (datosGuardados[i - 1] !== undefined) {
-      inflacionFila.cells[i].textContent = datosGuardados[i - 1].replace('.', ',') + '%';
-    }
+  const datos = loadInflacion();
+  if(!datos) return;
+  const inflacionFila = document.querySelector('#premisas-table tbody tr:first-child');
+  for(let i=1;i<inflacionFila.cells.length;i++){
+    if(datos[i-1]!==undefined)
+      inflacionFila.cells[i].textContent = datos[i-1].replace('.',',')+'%';
   }
 }
 
-// --- Presupuesto: permitir editar columna "Mes Anterior" ---
+// --- Presupuesto Mes Anterior ---
 function habilitarGastoMesAnterior() {
-  const tabla = document.getElementById('presupuesto-table');
-  const filas = tabla.tBodies[0].rows;
-
-  const saved = JSON.parse(localStorage.getItem('gastoMesAnterior')) || [];
-
-  for (let i = 0; i < filas.length; i++) {
-    const celda = filas[i].cells[1];
-    celda.contentEditable = 'true';
-    celda.title = "Editar gasto mes anterior";
-
-    if (saved[i]) celda.textContent = saved[i];
-
-    celda.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        celda.blur();
-      }
-    });
-
-    celda.addEventListener('blur', () => {
-      celda.textContent = formatCellValue(celda.textContent);
-      savePresupuestoBase();
-      calcularPresupuesto();
-    });
-  }
+  const filas = document.querySelectorAll('#presupuesto-table tbody tr');
+  const saved = JSON.parse(localStorage.getItem('gastoMesAnterior'))||[];
+  filas.forEach((fila,i)=>{
+    const celda=fila.cells[1];
+    celda.contentEditable='true';
+    celda.title="Editar gasto mes anterior";
+    if(saved[i]) celda.textContent=saved[i];
+    celda.addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault(); celda.blur();}});
+    celda.addEventListener('blur', ()=>{ celda.textContent=formatCellValue(celda.textContent); savePresupuestoBase(); calcularPresupuesto(); });
+  });
 }
 
-// --- Guardar columna "Gasto Mes Anterior" ---
 function savePresupuestoBase() {
-  const tabla = document.getElementById('presupuesto-table');
-  const filas = tabla.tBodies[0].rows;
-  const valores = [];
-
-  for (let i = 0; i < filas.length; i++) {
-    const celda = filas[i].cells[1];
-    valores.push(celda.textContent);
-  }
-
+  const filas = document.querySelectorAll('#presupuesto-table tbody tr');
+  const valores = Array.from(filas).map(f=>f.cells[1].textContent);
   localStorage.setItem('gastoMesAnterior', JSON.stringify(valores));
 }
 
-// --- Gastos reales editables ---
-const realTable = document.querySelector('#real-table tbody');
-
+// --- Gastos Reales ---
 function formatCellValue(value) {
-  let num = parseFloat(value.replace(/\./g, '').replace(',', '.'));
-  if (isNaN(num)) return '';
-  return num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  let num = parseFloat(value.replace(/\./g,'').replace(',', '.'));
+  if(isNaN(num)) return '';
+  return num.toLocaleString('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
-function handleCellEdit(e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    const cell = e.target;
-    cell.textContent = formatCellValue(cell.textContent);
-    saveRealTable();
-  }
+const realTable = document.querySelector('#real-table tbody');
+function loadRealTable(){
+  const saved = JSON.parse(localStorage.getItem('gastosReales'))||[];
+  Array.from(realTable.rows).forEach((row,i)=>{
+    Array.from(row.cells).forEach((cell,j)=>{
+      if(j>0){
+        cell.contentEditable='true';
+        if(saved[i]&&saved[i][j]) cell.textContent=saved[i][j];
+        cell.addEventListener('keydown', e=>{if(e.key==='Enter'){e.preventDefault(); cell.blur();}});
+        cell.addEventListener('blur', ()=>{
+          cell.textContent=formatCellValue(cell.textContent);
+          saveRealTable();
+        });
+      }
+    });
+  });
 }
 
-function loadRealTable() {
-  const saved = JSON.parse(localStorage.getItem('gastosReales')) || [];
-  const rows = realTable.rows;
-  for (let i = 0; i < rows.length; i++) {
-    const cells = rows[i].cells;
-    for (let j = 1; j < cells.length; j++) {
-      cells[j].contentEditable = 'true';
-      if (saved[i] && saved[i][j]) cells[j].textContent = saved[i][j];
-      cells[j].addEventListener('keydown', handleCellEdit);
-      cells[j].addEventListener('blur', () => {
-        cells[j].textContent = formatCellValue(cells[j].textContent);
-        saveRealTable();
-      });
-    }
-  }
-}
-
-function saveRealTable() {
-  const rows = realTable.rows;
-  const data = [];
-  for (let i = 0; i < rows.length; i++) {
-    const cells = rows[i].cells;
-    data[i] = [];
-    for (let j = 1; j < cells.length; j++) {
-      data[i][j] = cells[j].textContent;
-    }
-  }
+function saveRealTable(){
+  const data = Array.from(realTable.rows).map(r=>Array.from(r.cells).map((c,j)=> j>0?c.textContent:''));
   localStorage.setItem('gastosReales', JSON.stringify(data));
-  calcularDiferencias(); // <-- Recalcular diferencias al guardar
+  calcularDiferencias();
 }
 
+// --- Diferencias ---
+function calcularDiferencias() {
+  const filasPresupuesto = document.querySelectorAll('#presupuesto-table tbody tr');
+  const filasReal = document.querySelectorAll('#real-table tbody tr');
+  const filasDif = document.querySelectorAll('#diferencia-table tbody tr');
+
+  filasPresupuesto.forEach((filaPres,i)=>{
+    const filaReal = filasReal[i];
+    const filaDif = filasDif[i];
+    filaDif.cells[0].textContent = filaPres.cells[0].textContent;
+    for(let mes=1;mes<=12;mes++){
+      const valPres=parseNumber(filaPres.cells[mes+1].textContent);
+      const valReal=parseNumber(filaReal.cells[mes].textContent);
+      const dif=valPres-valReal;
+      filaDif.cells[mes].textContent=formatNumber(dif);
+      filaDif.cells[mes].style.backgroundColor=dif>0?'#d0f0c0':dif<0?'#f8d7da':'';
+    }
+  });
+}
+
+// --- Comentarios por mes ---
+const listaComentarios = document.getElementById('lista-comentarios');
+const selectMes = document.getElementById('mes-comentario');
+
+function cargarComentarios(){
+  const mes = selectMes.value;
+  listaComentarios.innerHTML = localStorage.getItem(`comentarios-${mes}`)||'';
+  Array.from(listaComentarios.children).forEach(li=>{
+    li.contentEditable='true';
+    li.addEventListener('blur', guardarComentarios);
+  });
+}
+
+function guardarComentarios(){
+  const mes = selectMes.value;
+  localStorage.setItem(`comentarios-${mes}`, listaComentarios.innerHTML);
+}
+
+selectMes.addEventListener('change', cargarComentarios);
+
+document.getElementById('agregar-comentario').addEventListener('click',()=>{
+  const li=document.createElement('li');
+  li.textContent="Nuevo comentario";
+  li.contentEditable='true';
+  li.style.padding="5px"; li.style.border="1px solid #ccc"; li.style.marginBottom="4px";
+  li.addEventListener('blur', guardarComentarios);
+  listaComentarios.appendChild(li);
+  guardarComentarios();
+});
+
+document.getElementById('eliminar-comentario').addEventListener('click',()=>{
+  if(listaComentarios.lastElementChild) listaComentarios.removeChild(listaComentarios.lastElementChild);
+  guardarComentarios();
+});
+
+listaComentarios.addEventListener('input', guardarComentarios);
 
 // --- Inicialización ---
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', ()=>{
   cargarInflacionGuardada();
   habilitarEdicionInflacion();
   habilitarGastoMesAnterior();
   calcularPresupuesto();
   loadRealTable();
-  calcularDiferencias(); // <-- Agregado para calcular diferencias al inicio
+  calcularDiferencias();
+  cargarComentarios();
 });
-
-
-// --- Exportar e importar Excel (igual que antes) ---
-document.getElementById('exportarExcel').addEventListener('click', () => {
-  // ...
-  // este bloque no cambió
-});
-
-document.getElementById('importarExcel').addEventListener('click', () => {
-  document.getElementById('fileInput').click();
-});
-
-document.getElementById('fileInput').addEventListener('change', e => {
-  // ...
-  // este bloque tampoco cambió
-});
-function calcularDiferencias() {
-  const tablaPresupuesto = document.getElementById('presupuesto-table');
-  const tablaReal = document.getElementById('real-table');
-  const tablaDiferencia = document.getElementById('diferencia-table');
-  
-  const filasPresupuesto = tablaPresupuesto.tBodies[0].rows;
-  const filasReal = tablaReal.tBodies[0].rows;
-  const filasDiferencia = tablaDiferencia.tBodies[0].rows;
-
-  for (let i = 0; i < filasPresupuesto.length; i++) {
-    const celdasPresupuesto = filasPresupuesto[i].cells;
-    const celdasReal = filasReal[i].cells;
-    const celdasDiferencia = filasDiferencia[i].cells;
-
-    // Copiar nombre de cuenta
-    celdasDiferencia[0].textContent = celdasPresupuesto[0].textContent;
-
-    for (let mes = 1; mes <= 12; mes++) {
-      const valPresupuesto = parseNumber(celdasPresupuesto[mes + 1].textContent);
-      const valReal = parseNumber(celdasReal[mes].textContent);
-      const diferencia = valPresupuesto - valReal;
-
-      celdasDiferencia[mes].textContent = formatNumber(diferencia);
-
-      // Limpiar clases anteriores
-      celdasDiferencia[mes].classList.remove('positivo', 'negativo');
-
-      if (diferencia > 0) {
-        celdasDiferencia[mes].classList.add('positivo');
-        celdasDiferencia[mes].style.backgroundColor = '#e6f4ea'; // verde tenue
-      } else if (diferencia < 0) {
-        celdasDiferencia[mes].classList.add('negativo');
-        celdasDiferencia[mes].style.backgroundColor = '#fdecea'; // rojo tenue
-      } else {
-        celdasDiferencia[mes].style.backgroundColor = ''; // sin color
-      }
-    }
-  }
-}
-if (diferencia > 0) {
-  celdasDiferencia[mes].classList.add('positivo');
-  celdasDiferencia[mes].classList.remove('negativo');
-} else if (diferencia < 0) {
-  celdasDiferencia[mes].classList.add('negativo');
-  celdasDiferencia[mes].classList.remove('positivo');
-} else {
-  celdasDiferencia[mes].classList.remove('positivo');
-  celdasDiferencia[mes].classList.remove('negativo');
-}
