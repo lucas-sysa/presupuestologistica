@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Presupuesto 2025</title>
+  <title>Presupuesto</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>Presupuesto 2025</h1>
+  <h1><center>Presupuesto Logística 2025</center></h1>
 
   <!-- Tabla de Premisas -->
   <h2>Premisas</h2>
@@ -59,7 +59,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>Bs de Uso - Compras menores</td><td></td><td class="fijo">18.678,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos Extras</td><td></td><td class="fijo">18.678,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
         <tr><td>Descarga de Contenedores</td><td></td><td class="fijo">19.415.296,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
         <tr><td>Gastos de Papelería y útiles</td><td></td><td class="fijo">763.561,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
         <tr><td>Alquileres pagados</td><td></td><td class="fijo">2.025.720,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
@@ -75,11 +75,6 @@
   </div>
 
  <h2>Gastos Reales</h2>
-  <div class="acciones-excel">
-    <button id="exportarExcel">Exportar a Excel</button>
-    <button id="importarExcel">Importar Excel</button>
-    <input type="file" id="fileInput" style="display:none;" />
-  </div>
   <div id="real-container">
     <table id="real-table">
       <thead>
@@ -91,7 +86,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>Bs de Uso - Compras menores</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos Extras</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
         <tr><td>Descarga de Contenedores</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
         <tr><td>Gastos de Papelería y útiles</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
         <tr><td>Alquileres pagados</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
@@ -118,7 +113,7 @@
     </thead>
     <tbody>
       <!-- Se genera igual que las otras tablas -->
-      <tr><td>Bs de Uso - Compras menores</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Gastos Extras</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
       <tr><td>Descarga de Contenedores</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
       <tr><td>Gastos de Papelería y útiles</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
       <tr><td>Alquileres pagados</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
@@ -133,30 +128,30 @@
   </table>
 </div>
 
-<h2>Pañol</h2>
-<div id="resumen-container">
-  <table id="resumen-table">
-    <thead>
-      <tr>
-        <th></th>
-        <th>Pañol</th>
-        <th>Promedio</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>Descarga</td><td>$ 9.711.977,48</td><td>$ 1.618.662,91</td></tr>
-      <tr><td>Desarrollo</td><td>$ 701.835,70</td><td>$ 116.972,62</td></tr>
-      <tr><td>L-09</td><td>$ 7.412.111,10</td><td>$ 1.235.351,85</td></tr>
-      <tr><td>L-06</td><td>$ 728.207,65</td><td>$ 121.367,94</td></tr>
-      <tr><td>L-21</td><td>$ 10.613.517,40</td><td>$ 1.768.919,57</td></tr>
-      <tr><td>L-14</td><td>$ 6.204.675,18</td><td>$ 1.034.112,53</td></tr>
-      <tr><td>L-12</td><td>$ 14.378.459,05</td><td>$ 2.396.409,84</td></tr>
-      <tr><td>GDP</td><td>$ 691.055,36</td><td>$ 115.175,89</td></tr>
-      <tr><td>Expedición</td><td>$ 3.683.551,16</td><td>$ 613.925,19</td></tr>
-      <tr><th>Total</th><th>$ 54.125.390,08</th><th>$ 9.020.898,35</th>
-    </tbody>
-  </table>
+<div id="comentarios-generales">
+  <label for="mes-comentario">Seleccionar mes:</label>
+  <select id="mes-comentario">
+    <option value="Enero">Enero</option>
+    <option value="Febrero">Febrero</option>
+    <option value="Marzo">Marzo</option>
+    <option value="Abril">Abril</option>
+    <option value="Mayo">Mayo</option>
+    <option value="Junio">Junio</option>
+    <option value="Julio">Julio</option>
+    <option value="Agosto">Agosto</option>
+    <option value="Septiembre">Septiembre</option>
+    <option value="Octubre">Octubre</option>
+    <option value="Noviembre">Noviembre</option>
+    <option value="Diciembre">Diciembre</option>
+  </select>
+
+  <button id="agregar-comentario">+ Agregar comentario</button>
+  <button id="eliminar-comentario">- Eliminar último comentario</button>
+
+  <!-- Lista de comentarios del mes seleccionado -->
+  <ul id="lista-comentarios" style="margin-top:10px;"></ul>
 </div>
+
   <script src="script.js"></script>
 </body>
 </html>
