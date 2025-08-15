@@ -7,26 +7,52 @@
 }
 
 body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
   background-color: #E7E6E6;
   color: #333;
-  padding: 20px;
 }
 
-/* --- Tablas ultra minimalistas --- */
-table {
-  border-collapse: collapse;
-  width: 100%;
-  min-width: 680px;
-  font-size: 13px;
+/* --- Encabezado --- */
+h1 {
+  margin-bottom: 20px;
   color: #333;
+}
+
+/* --- Filtros --- */
+.filters {
+  margin: 15px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+label {
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+#searchInput {
+  padding: 4px;
+  width: 220px;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+}
+
+/* --- Tablas --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
   background: #fff;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  font-size: 13px;
 }
 
 thead th {
-  background: #048C7C;
+  background-color: #048C7C; /* color index */
   color: #fff;
-  font-weight: 600;
+  font-weight: normal;
   padding: 8px 10px;
   text-align: center;
   position: sticky;
@@ -59,127 +85,133 @@ tbody td {
   transition: background 0.15s;
 }
 
-tbody td:first-child {
-  text-align: left;
-}
-
 tbody tr:nth-child(even) td {
   background-color: #fcfcfc;
 }
 
 tbody tr:hover td {
-  background-color: #f0f8ff;
+  background-color: #AEAAAA;
   cursor: pointer;
 }
 
 /* --- Celdas editables --- */
-td[contenteditable="true"] {
-  background-color: #fff8dc;
-  border: 1px dashed #ccc;
-  cursor: text;
+tbody td[contenteditable="true"] {
+  background: #fff;
+  border: 1px solid #cfe2fc;
   border-radius: 3px;
+  cursor: text;
+  transition: all 0.15s;
 }
 
-td[contenteditable="true"]:focus {
+tbody td[contenteditable="true"]:focus {
   outline: none;
-  background-color: #eaf4ff;
+  background: #eaf4ff;
   border-color: #90c0f0;
 }
 
-/* --- Diferencias --- */
-.positivo {
-  background-color: #d0f0c0 !important; /* verde tenue */
-  color: #2e7d32;
-}
-
-.negativo {
-  background-color: #f8d7da !important; /* rojo tenue */
-  color: #c62828;
-}
-
-#diferencia-table tbody td:not(:first-child) {
-  font-weight: 600;
+/* --- Inputs de costos --- */
+input.costo-input {
+  width: 80px;
   text-align: right;
-}
-
-/* --- Contenedores y filtros --- */
-#premisas-container,
-#presupuesto-container,
-#real-container,
-#diferencia-container,
-.acciones-excel,
-.filters {
-  margin: 10px 0;
-  overflow-x: auto;
-}
-
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-label {
-  font-size: 14px;
-  margin-right: 10px;
-}
-
-#searchInput {
   padding: 4px;
-  width: 220px;
   border-radius: 3px;
   border: 1px solid #ccc;
 }
 
-/* --- Botones minimalistas --- */
+/* --- Diferencias --- */
+.positivo {
+  background-color: #d0f0c0 !important;
+}
+
+.negativo {
+  background-color: #f8d7da !important;
+}
+
+tbody td:not(:first-child) {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* --- Contenedores --- */
+#premisas-container,
+#presupuesto-container,
+#real-container,
+#diferencia-container,
+.acciones-excel {
+  margin: 10px 0;
+  overflow-x: auto;
+}
+
+/* --- Botones --- */
 .acciones-excel button,
 .mes-botones button,
-.btn-panol {
-  margin-right: 5px;
+.btn-panol,
+#agregar-comentario,
+#eliminar-comentario {
   padding: 4px 10px;
   border: none;
   border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+
+.acciones-excel button,
+.mes-botones button {
   background: #04847C;
   color: #fff;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s;
 }
 
 .acciones-excel button:hover,
 .mes-botones button:hover,
-.btn-panol:hover {
-  background: #357abd;
-  transform: translateY(-1px);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+.btn-panol:hover,
+#agregar-comentario:hover,
+#eliminar-comentario:hover {
+  background-color: #357abd;
 }
 
-/* Botón específico Pañol */
+/* Botón pañol */
 .btn-panol {
-  padding: 8px 16px;
+  background-color: #007acc;
+  color: #fff;
   font-size: 14px;
 }
 
-.btn-panol:hover {
-  background-color: #005fa3;
+/* --- Gráfico --- */
+#chartContainer {
+  margin-top: 25px;
+  margin-bottom: 10px;
+  width: 100%;
+  height: 500px;
+  position: relative;
 }
 
-/* --- Bloques de gastos mensuales --- */
+/* --- Total general --- */
+.total-general {
+  font-weight: bold;
+  color: #333;
+  margin: 5px 0;
+}
+
+/* --- Bloques de gastos por mes --- */
+#meses-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
 .mes {
-  margin-bottom: 10px;
-  background: #fff;
+  background-color: #fff;
+  padding: 10px;
   border-radius: 8px;
-  padding: 8px 10px;
-  border: 1px solid #e0e0e0;
   width: 200px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
 .mes-titulo {
   font-weight: bold;
-  color: #4a90e2;
-  margin-bottom: 4px;
-  font-size: 13px;
+  margin-bottom: 5px;
 }
 
 .gastos-lista {
@@ -188,22 +220,21 @@ label {
   min-height: 50px;
 }
 
-.gastos-lista li {
-  margin-bottom: 3px;
-  padding: 2px 4px;
-  background: #fff;
-  border-radius: 3px;
-  border: 1px solid #e0e0e0;
-}
-
-.gastos-lista li:hover {
-  background: #D0CECE;
-}
-
 .mes-botones {
   margin-top: 5px;
   display: flex;
   justify-content: space-between;
+}
+
+.mes-botones button {
+  background-color: #007bff;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.mes-botones button:hover {
+  background-color: #0056b3;
 }
 
 /* --- Comentarios --- */
@@ -219,66 +250,8 @@ label {
   border-radius: 4px;
 }
 
-#agregar-comentario, #eliminar-comentario {
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#agregar-comentario {
-  background-color: #28a745;
-  color: white;
-}
-
-#eliminar-comentario {
-  background-color: #dc3545;
-  color: white;
-  margin-left: 5px;
-}
-
-#agregar-comentario:hover { background-color: #218838; }
-#eliminar-comentario:hover { background-color: #c82333; }
-
-#mes-comentario {
-  margin-bottom: 10px;
-  padding: 4px 6px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-/* --- Gráfico --- */
-#chartContainer {
-  margin-top: 25px;
-  margin-bottom: 10px;
-  width: 100%;
-  height: 500px;
-  position: relative;
-}
-
-/* --- Totales --- */
-.total-general {
-  font-weight: bold;
-  color: #333;
-  margin: 5px 0;
-}
-
 /* --- Responsive --- */
 @media (max-width: 1024px) {
   #meses-container { flex-direction: column; width: 100%; }
   .mes { width: 100%; }
-}
-
-@media (max-width: 992px) {
-  table { font-size: 12px; }
-  thead th:first-child,
-  tbody td:first-child { min-width: 150px; }
-}
-
-@media (max-width: 480px) {
-  #premisas-container,
-  #presupuesto-container,
-  #real-container,
-  #diferencia-container { overflow-x: auto; }
-  table { min-width: 680px; }
 }
