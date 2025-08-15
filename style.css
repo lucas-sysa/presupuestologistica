@@ -1,25 +1,119 @@
-/* --- Reset básico y body --- */
+/* --- Reset básico --- */
 * {
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
 }
 
 body {
-  background-color: #f9f9f9;
+  background-color: #E7E6E6;
   color: #333;
   padding: 20px;
 }
 
-h1 {
-  margin-bottom: 20px;
+/* --- Tablas ultra minimalistas --- */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 680px;
+  font-size: 13px;
   color: #333;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* --- Filtros --- */
+thead th {
+  background: #048C7C;
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 10px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+thead th:first-child,
+tbody td:first-child {
+  position: sticky;
+  left: 0;
+  background: #fafafa;
+  z-index: 20;
+  font-weight: 600;
+  padding-left: 12px;
+  border-right: 1px solid #e0e0e0;
+}
+
+tbody td {
+  padding: 6px 10px;
+  text-align: right;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s;
+}
+
+tbody td:first-child {
+  text-align: left;
+}
+
+tbody tr:nth-child(even) td {
+  background-color: #fcfcfc;
+}
+
+tbody tr:hover td {
+  background-color: #f0f8ff;
+  cursor: pointer;
+}
+
+/* --- Celdas editables --- */
+td[contenteditable="true"] {
+  background-color: #fff8dc;
+  border: 1px dashed #ccc;
+  cursor: text;
+  border-radius: 3px;
+}
+
+td[contenteditable="true"]:focus {
+  outline: none;
+  background-color: #eaf4ff;
+  border-color: #90c0f0;
+}
+
+/* --- Diferencias --- */
+.positivo {
+  background-color: #d0f0c0 !important; /* verde tenue */
+  color: #2e7d32;
+}
+
+.negativo {
+  background-color: #f8d7da !important; /* rojo tenue */
+  color: #c62828;
+}
+
+#diferencia-table tbody td:not(:first-child) {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* --- Contenedores y filtros --- */
+#premisas-container,
+#presupuesto-container,
+#real-container,
+#diferencia-container,
+.acciones-excel,
 .filters {
-  margin: 15px 0;
+  margin: 10px 0;
+  overflow-x: auto;
+}
+
+.filters {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -27,56 +121,129 @@ h1 {
 
 label {
   font-size: 14px;
+  margin-right: 10px;
 }
 
-/* --- Tablas --- */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-  background: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
-  font-size: 14px;
-}
-
-th {
-  background: #007acc; /* color index */
-  color: #fff;
-  font-weight: normal;
-}
-
-tbody td {
-  background: #fff;
-}
-
-tbody tr:nth-child(even) td {
-  background-color: #f7f7f7;
-}
-
-tbody tr:hover td {
-  background-color: #dce6f0;
-}
-
-/* --- Inputs de costo --- */
-input.costo-input {
-  width: 80px;
-  text-align: right;
-  padding: 4px;
-  border-radius: 3px;
-  border: 1px solid #ccc;
-}
-
-/* --- Buscar --- */
 #searchInput {
   padding: 4px;
   width: 220px;
   border-radius: 3px;
+  border: 1px solid #ccc;
+}
+
+/* --- Botones minimalistas --- */
+.acciones-excel button,
+.mes-botones button,
+.btn-panol {
+  margin-right: 5px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: #04847C;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.acciones-excel button:hover,
+.mes-botones button:hover,
+.btn-panol:hover {
+  background: #357abd;
+  transform: translateY(-1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+/* Botón específico Pañol */
+.btn-panol {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn-panol:hover {
+  background-color: #005fa3;
+}
+
+/* --- Bloques de gastos mensuales --- */
+.mes {
+  margin-bottom: 10px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e0e0e0;
+  width: 200px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.mes-titulo {
+  font-weight: bold;
+  color: #4a90e2;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.gastos-lista {
+  list-style-type: disc;
+  padding-left: 20px;
+  min-height: 50px;
+}
+
+.gastos-lista li {
+  margin-bottom: 3px;
+  padding: 2px 4px;
+  background: #fff;
+  border-radius: 3px;
+  border: 1px solid #e0e0e0;
+}
+
+.gastos-lista li:hover {
+  background: #D0CECE;
+}
+
+.mes-botones {
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* --- Comentarios --- */
+#comentarios-container {
+  margin-top: 20px;
+}
+
+#lista-comentarios li {
+  background-color: #fff;
+  padding: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 4px;
+  border-radius: 4px;
+}
+
+#agregar-comentario, #eliminar-comentario {
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#agregar-comentario {
+  background-color: #28a745;
+  color: white;
+}
+
+#eliminar-comentario {
+  background-color: #dc3545;
+  color: white;
+  margin-left: 5px;
+}
+
+#agregar-comentario:hover { background-color: #218838; }
+#eliminar-comentario:hover { background-color: #c82333; }
+
+#mes-comentario {
+  margin-bottom: 10px;
+  padding: 4px 6px;
+  border-radius: 4px;
   border: 1px solid #ccc;
 }
 
@@ -89,40 +256,29 @@ input.costo-input {
   position: relative;
 }
 
-/* --- Total general --- */
+/* --- Totales --- */
 .total-general {
   font-weight: bold;
   color: #333;
   margin: 5px 0;
 }
 
-/* --- Celdas editables --- */
-td[contenteditable="true"] {
-  background-color: #fff8dc;
-  border: 1px dashed #ccc;
-  cursor: text;
-}
-
-/* --- Botón pañol (para index.html) --- */
-.btn-panol {
-  background-color: #007acc;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
-}
-
-.btn-panol:hover {
-  background-color: #005fa3;
-}
-
 /* --- Responsive --- */
 @media (max-width: 1024px) {
-  .filters {
-    flex-direction: column;
-    width: 100%;
-  }
+  #meses-container { flex-direction: column; width: 100%; }
+  .mes { width: 100%; }
+}
+
+@media (max-width: 992px) {
+  table { font-size: 12px; }
+  thead th:first-child,
+  tbody td:first-child { min-width: 150px; }
+}
+
+@media (max-width: 480px) {
+  #premisas-container,
+  #presupuesto-container,
+  #real-container,
+  #diferencia-container { overflow-x: auto; }
+  table { min-width: 680px; }
 }
