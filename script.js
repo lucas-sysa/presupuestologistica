@@ -1,182 +1,196 @@
-let rawData = [];
-let costos = JSON.parse(localStorage.getItem('costosUnitarios')) || {};
-let clienteChart;
-
-document.getElementById('excelFile').addEventListener('change', handleFile);
-document.getElementById('searchInput').addEventListener('input', renderTable);
-
-function handleFile(e) {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function(event) {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-
-        rawData = XLSX.utils.sheet_to_json(sheet, { defval: '' })
-            .filter(r => parseFloat(r.Cantidad) > 0)
-            .map(r => {
-                r.FechaObj = r.Fecha ? XLSX.SSF.parse_date_code(r.Fecha) : null;
-                if (r.FechaObj) r.FechaObj = new Date(r.FechaObj.y, r.FechaObj.m - 1, r.FechaObj.d);
-                if (costos[r.Código]) r.CostoUnitario = costos[r.Código];
-                return r;
-            });
-
-        populateFilters();
-        renderTable();
-    };
-
-    reader.readAsArrayBuffer(file);
-}
-
-function populateFilters() {
-    const grupos = [...new Set(rawData.map(r => r.Grupo))];
-    const clientes = [...new Set(rawData.map(r => r.Cliente))];
-    const codigos = [...new Set(rawData.map(r => r.Código))];
-
-    fillSelect('filterGrupo', grupos);
-    fillSelect('filterCliente', clientes);
-    fillSelect('filterCodigo', codigos);
-
-    const days = [...new Set(rawData.map(r => r.FechaObj?.getDate()))].sort((a,b)=>a-b);
-    const months = [...new Set(rawData.map(r => r.FechaObj?.getMonth()+1))].sort((a,b)=>a-b);
-    const years = [...new Set(rawData.map(r => r.FechaObj?.getFullYear()))].sort((a,b)=>a-b);
-
-    fillSelect('filterDay', days);
-    fillSelect('filterMonth', months);
-    fillSelect('filterYear', years);
-
-    ['filterGrupo','filterCliente','filterCodigo','filterDay','filterMonth','filterYear'].forEach(id => {
-        document.getElementById(id).addEventListener('change', renderTable);
-    });
-}
-
-function fillSelect(id, values) {
-    const select = document.getElementById(id);
-    select.innerHTML = '<option value="">Todos</option>';
-    values.forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = v;
-        select.appendChild(opt);
-    });
+// --- Funciones de parseo y formateo ---
+function parseNumber(str) {
+  if (!str) return 0;
+  return Number(str.replace(/\./g, '').replace(',', '.')) || 0;
 }
 
 function formatNumber(num) {
-    return num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return num
+    .toFixed(2)
+    .replace('.', ',')
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-function renderTable() {
-    const tbody = document.querySelector('#dataTable tbody');
-    tbody.innerHTML = '';
+// --- Inflación ---
+function saveInflacion(data) { localStorage.setItem('inflacionProyectada', JSON.stringify(data)); }
+function loadInflacion() { return JSON.parse(localStorage.getItem('inflacionProyectada')) || null; }
 
-    const grupoSel = document.getElementById('filterGrupo').value;
-    const clienteSel = document.getElementById('filterCliente').value;
-    const codigoSel = document.getElementById('filterCodigo').value;
-    const daySel = parseInt(document.getElementById('filterDay')?.value) || '';
-    const monthSel = parseInt(document.getElementById('filterMonth')?.value) || '';
-    const yearSel = parseInt(document.getElementById('filterYear')?.value) || '';
-    const searchText = document.getElementById('searchInput').value.toLowerCase();
+function getInflacionMeses() {
+  const inflacionFila = document.querySelector('#premisas-table tbody tr:first-child');
+  const inflacionValores = [];
+  for (let i = 1; i < inflacionFila.cells.length; i++) {
+    let val = inflacionFila.cells[i].textContent.trim().replace('%','').replace(',', '.');
+    inflacionValores.push(parseFloat(val)/100);
+  }
+  return inflacionValores;
+}
 
-    let filtered = rawData.filter(r => 
-        (grupoSel === '' || r.Grupo === grupoSel) &&
-        (clienteSel === '' || r.Cliente === clienteSel) &&
-        (codigoSel === '' || r.Código === codigoSel) &&
-        (daySel === '' || r.FechaObj?.getDate() === daySel) &&
-        (monthSel === '' || (r.FechaObj?.getMonth()+1) === monthSel) &&
-        (yearSel === '' || r.FechaObj?.getFullYear() === yearSel) &&
-        (
-            r.Código.toString().toLowerCase().includes(searchText) ||
-            r.Detalle.toLowerCase().includes(searchText) ||
-            r.Cliente.toLowerCase().includes(searchText) ||
-            r.Grupo.toLowerCase().includes(searchText)
-        )
-    );
+function calcularPresupuesto() {
+  const filas = document.querySelectorAll('#presupuesto-table tbody tr');
+  const inflacion = getInflacionMeses();
+  filas.forEach(fila => {
+    const celdas = fila.cells;
+    let nuevoValor = parseNumber(celdas[1].textContent);
+    for (let mes = 1; mes <= 12; mes++) {
+      nuevoValor = nuevoValor * (1 + inflacion[mes-1]);
+      celdas[mes+1].textContent = formatNumber(nuevoValor);
+    }
+  });
+}
 
-    filtered.forEach(row => {
-        const tr = document.createElement('tr');
-        const fechaStr = row.FechaObj ? row.FechaObj.toLocaleDateString() : '';
-        tr.innerHTML = `
-            <td>${fechaStr}</td>
-            <td>${row.Cliente}</td>
-            <td>${row.Código}</td>
-            <td>${row.Detalle}</td>
-            <td>${row.Cantidad}</td>
-            <td>${row.Grupo}</td>
-            <td><input type="number" min="0" step="0.01" class="costo-input" 
-                value="${row.CostoUnitario || costos[row.Código] || ''}" 
-                data-codigo="${row.Código}"></td>
-            <td class="total-cell"></td>
-        `;
-        tbody.appendChild(tr);
+function habilitarEdicionInflacion() {
+  const inflacionFila = document.querySelector('#premisas-table tbody tr:first-child');
+  for (let i=1;i<inflacionFila.cells.length;i++) {
+    const celda = inflacionFila.cells[i];
+    celda.contentEditable='true';
+    celda.title="Editar inflación (%)";
+    celda.addEventListener('blur',()=>{
+      let val = celda.textContent.trim().replace('%','').replace(/[^\d,\.]/g,'');
+      if(val==='') val='0';
+      celda.textContent = val.replace('.',',')+'%';
+      guardarInflacionDesdeTabla();
+      calcularPresupuesto();
+      savePresupuestoBase();
     });
+    celda.addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault(); celda.blur();}});
+  }
+}
 
-    document.querySelectorAll('.costo-input').forEach(input => {
-        input.addEventListener('input', e => {
-            const codigo = e.target.getAttribute('data-codigo');
-            const valor = parseFloat(e.target.value) || 0;
-            costos[codigo] = valor;
-            localStorage.setItem('costosUnitarios', JSON.stringify(costos));
-            document.querySelectorAll(`.costo-input[data-codigo="${codigo}"]`).forEach(inp => inp.value = valor);
-            updateTotals();
+function guardarInflacionDesdeTabla() {
+  const inflacionFila = document.querySelector('#premisas-table tbody tr:first-child');
+  const datos = [];
+  for(let i=1;i<inflacionFila.cells.length;i++){
+    let val = inflacionFila.cells[i].textContent.trim().replace('%','').replace(',', '.');
+    datos.push(val);
+  }
+  saveInflacion(datos);
+}
+
+function cargarInflacionGuardada() {
+  const datos = loadInflacion();
+  if(!datos) return;
+  const inflacionFila = document.querySelector('#premisas-table tbody tr:first-child');
+  for(let i=1;i<inflacionFila.cells.length;i++){
+    if(datos[i-1]!==undefined)
+      inflacionFila.cells[i].textContent = datos[i-1].replace('.',',')+'%';
+  }
+}
+
+// --- Presupuesto Mes Anterior ---
+function habilitarGastoMesAnterior() {
+  const filas = document.querySelectorAll('#presupuesto-table tbody tr');
+  const saved = JSON.parse(localStorage.getItem('gastoMesAnterior'))||[];
+  filas.forEach((fila,i)=>{
+    const celda=fila.cells[1];
+    celda.contentEditable='true';
+    celda.title="Editar gasto mes anterior";
+    if(saved[i]) celda.textContent=saved[i];
+    celda.addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault(); celda.blur();}});
+    celda.addEventListener('blur', ()=>{ celda.textContent=formatCellValue(celda.textContent); savePresupuestoBase(); calcularPresupuesto(); });
+  });
+}
+
+function savePresupuestoBase() {
+  const filas = document.querySelectorAll('#presupuesto-table tbody tr');
+  const valores = Array.from(filas).map(f=>f.cells[1].textContent);
+  localStorage.setItem('gastoMesAnterior', JSON.stringify(valores));
+}
+
+// --- Gastos Reales ---
+function formatCellValue(value) {
+  let num = parseFloat(value.replace(/\./g,'').replace(',', '.'));
+  if(isNaN(num)) return '';
+  return num.toLocaleString('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+const realTable = document.querySelector('#real-table tbody');
+function loadRealTable(){
+  const saved = JSON.parse(localStorage.getItem('gastosReales'))||[];
+  Array.from(realTable.rows).forEach((row,i)=>{
+    Array.from(row.cells).forEach((cell,j)=>{
+      if(j>0){
+        cell.contentEditable='true';
+        if(saved[i]&&saved[i][j]) cell.textContent=saved[i][j];
+        cell.addEventListener('keydown', e=>{if(e.key==='Enter'){e.preventDefault(); cell.blur();}});
+        cell.addEventListener('blur', ()=>{
+          cell.textContent=formatCellValue(cell.textContent);
+          saveRealTable();
         });
+      }
     });
-
-    updateTotals();
-    renderChart();
+  });
 }
 
-function updateTotals() {
-    let totalGeneral = 0;
-    document.querySelectorAll('#dataTable tbody tr').forEach(tr => {
-        const codigo = tr.querySelector('.costo-input').getAttribute('data-codigo');
-        const cantidad = parseFloat(tr.children[4].textContent) || 0;
-        const costo = costos[codigo] || 0;
-        const total = cantidad * costo;
-        tr.querySelector('.total-cell').textContent = formatNumber(total);
-        totalGeneral += total;
-    });
-    const totalStr = formatNumber(totalGeneral);
-    document.getElementById('totalGeneral').textContent = totalStr;
-    document.getElementById('totalGeneralTop').textContent = `TOTAL GENERAL: ${totalStr}`;
+function saveRealTable(){
+  const data = Array.from(realTable.rows).map(r=>Array.from(r.cells).map((c,j)=> j>0?c.textContent:''));
+  localStorage.setItem('gastosReales', JSON.stringify(data));
+  calcularDiferencias();
 }
 
+// --- Diferencias ---
+function calcularDiferencias() {
+  const filasPresupuesto = document.querySelectorAll('#presupuesto-table tbody tr');
+  const filasReal = document.querySelectorAll('#real-table tbody tr');
+  const filasDif = document.querySelectorAll('#diferencia-table tbody tr');
 
-function renderChart() {
-    const totalsByCliente = {};
-    document.querySelectorAll('#dataTable tbody tr').forEach(tr => {
-        let cliente = tr.children[1].textContent;
-        const total = parseFloat(tr.children[7].textContent.replace(/\./g,'').replace(',','.')) || 0;
-        if (!totalsByCliente[cliente]) totalsByCliente[cliente] = 0;
-        totalsByCliente[cliente] += total;
-    });
-
-    const labels = Object.keys(totalsByCliente).map(name => {
-        return name.replace(/^LOGISTICA\s+/i,'').split(' ').slice(0,1).join(' '); 
-    });
-    const data = Object.values(totalsByCliente);
-
-    if (clienteChart) clienteChart.destroy();
-    const ctx = document.getElementById('clienteChart').getContext('2d');
-    clienteChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Total por Cliente',
-                data,
-                backgroundColor: '#007acc'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true } }
-        }
-    });
+  filasPresupuesto.forEach((filaPres,i)=>{
+    const filaReal = filasReal[i];
+    const filaDif = filasDif[i];
+    filaDif.cells[0].textContent = filaPres.cells[0].textContent;
+    for(let mes=1;mes<=12;mes++){
+      const valPres=parseNumber(filaPres.cells[mes+1].textContent);
+      const valReal=parseNumber(filaReal.cells[mes].textContent);
+      const dif=valPres-valReal;
+      filaDif.cells[mes].textContent=formatNumber(dif);
+      filaDif.cells[mes].style.backgroundColor=dif>0?'#d0f0c0':dif<0?'#f8d7da':'';
+    }
+  });
 }
 
+// --- Comentarios por mes ---
+const listaComentarios = document.getElementById('lista-comentarios');
+const selectMes = document.getElementById('mes-comentario');
 
+function cargarComentarios(){
+  const mes = selectMes.value;
+  listaComentarios.innerHTML = localStorage.getItem(`comentarios-${mes}`)||'';
+  Array.from(listaComentarios.children).forEach(li=>{
+    li.contentEditable='true';
+    li.addEventListener('blur', guardarComentarios);
+  });
+}
 
+function guardarComentarios(){
+  const mes = selectMes.value;
+  localStorage.setItem(`comentarios-${mes}`, listaComentarios.innerHTML);
+}
+
+selectMes.addEventListener('change', cargarComentarios);
+
+document.getElementById('agregar-comentario').addEventListener('click',()=>{
+  const li=document.createElement('li');
+  li.textContent="Nuevo comentario";
+  li.contentEditable='true';
+  li.style.padding="5px"; li.style.border="1px solid #ccc"; li.style.marginBottom="4px";
+  li.addEventListener('blur', guardarComentarios);
+  listaComentarios.appendChild(li);
+  guardarComentarios();
+});
+
+document.getElementById('eliminar-comentario').addEventListener('click',()=>{
+  if(listaComentarios.lastElementChild) listaComentarios.removeChild(listaComentarios.lastElementChild);
+  guardarComentarios();
+});
+
+listaComentarios.addEventListener('input', guardarComentarios);
+
+// --- Inicialización ---
+window.addEventListener('DOMContentLoaded', ()=>{
+  cargarInflacionGuardada();
+  habilitarEdicionInflacion();
+  habilitarGastoMesAnterior();
+  calcularPresupuesto();
+  loadRealTable();
+  calcularDiferencias();
+  cargarComentarios();
+});

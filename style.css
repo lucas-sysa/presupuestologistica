@@ -1,73 +1,358 @@
-body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background: #f9f9f9;
+/* --- Reset básico --- */
+* {
+  box-sizing: border-box;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-h1 {
-    margin-bottom: 20px;
-    color: #333;
-}
-
-.filters {
-    margin: 15px 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-label {
-    margin-right: 10px;
-    font-size: 14px;
-}
-
+/* --- Tablas ultra minimalistas --- */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 680px;
+  font-size: 13px;
+  color: #333;
+  background: #fff;
 }
 
-th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
-    font-size: 14px;
+/* --- Encabezado --- */
+thead th {
+  background: #fafafa;
+  color: #333;
+  font-weight: 600;
+  padding: 8px 10px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-th {
-    background: #007acc;
+/* --- Primera columna sticky --- */
+thead th:first-child,
+tbody td:first-child {
+  position: sticky;
+  left: 0;
+  background: #fafafa;
+  z-index: 20;
+  font-weight: 600;
+  padding-left: 12px;
+  border-right: 1px solid #e0e0e0;
+}
+
+/* --- Celdas del cuerpo --- */
+tbody td {
+  padding: 6px 10px;
+  text-align:;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s;
+}
+
+/* --- Alternar color filas leve --- */
+tbody tr:nth-child(even) td {
+  background-color: #fcfcfc;
+}
+
+/* --- Hover muy suave --- */
+tbody tr:hover td {
+  background-color: #AEAAAA;
+  cursor: pointer;
+}
+
+/* --- Celdas editables --- */
+tbody td[contenteditable="true"] {
+  background: #fff;
+  border: 1px solid #cfe2fc;
+  border-radius: 3px;
+  cursor: text;
+  transition: all 0.15s;
+}
+
+tbody td[contenteditable="true"]:focus {
+  outline: none;
+  background: #eaf4ff;
+  border-color: #90c0f0;
+}
+
+/* --- Diferencias --- */
+#diferencia-table tbody td.positivo {
+  color: #2e7d32;
+  background-color: #e6f4e6;
+}
+
+#diferencia-table tbody td.negativo {
+  color: #c62828;
+  background-color: #fdeaea;
+}
+
+#diferencia-table tbody td:not(:first-child) {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* --- Contenedores --- */
+#premisas-container,
+#presupuesto-container,
+#real-container,
+#diferencia-container,
+.acciones-excel {
+  margin: 10px 0;
+  overflow-x: auto;
+}
+
+/* --- Botones minimalistas --- */
+.acciones-excel button,
+.mes-botones button {
+  margin-right: 5px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  background: #04847C;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.acciones-excel button:hover,
+.mes-botones button:hover {
+  background: #357abd;
+  transform: translateY(-1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+/* --- Bloques de gastos mensuales --- */
+.mes {
+  margin-bottom: 10px;
+  background: #fff;
+  border-radius: 5px;
+  padding: 8px 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.mes-titulo {
+  font-weight: 600;
+  color: #4a90e2;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.gastos-lista {
+  list-style-type: disc;
+  padding-left: 20px;
+  min-height: 24px;
+  font-size: 12px;
+  color: #333;
+}
+
+.gastos-lista li {
+  margin-bottom: 3px;
+  padding: 2px 4px;
+  background: #fff;
+  border-radius: 3px;
+  border: 1px solid #e0e0e0;
+}
+
+.gastos-lista li:hover {
+  background: #D0CECE;
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+  table {
+    font-size: 12px;
+  }
+  thead th:first-child,
+  tbody td:first-child {
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  #premisas-container,
+  #presupuesto-container,
+  #real-container,
+  #diferencia-container {
+    overflow-x: auto;
+  }
+  table {
+    min-width: 680px;
+  }
+}
+/* --- Reset básico --- */
+* {
+  box-sizing: border-box;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #E7E6E6;
+  color: #333;
+  padding: 20px;
+}
+
+/* --- Tablas --- */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 680px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+thead th {
+  background-color: #048C7C;
+  color: #FFFFFF;
+  font-weight: normal;
+  padding: 8px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+tbody td {
+  padding: 6px 8px;
+  text-align: right;
+  border-bottom: 1px solid #eee;
+}
+
+tbody td:first-child {
+  text-align: left;
+  font-weight: bold;
+}
+
+tbody tr:hover {
+  background-color: #f0f8ff;
+}
+
+/* --- Diferencias --- */
+.positivo {
+  background-color: #d0f0c0 !important; /* verde tenue */
+}
+
+.negativo {
+  background-color: #f8d7da !important; /* rojo tenue */
+}
+
+/* --- Celdas editables --- */
+td[contenteditable="true"] {
+  background-color: #fff8dc;
+  border: 1px dashed #ccc;
+  cursor: text;
+}
+
+/* --- Bloques de gastos por mes --- */
+#meses-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.mes {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  width: 200px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.mes-titulo {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.gastos-lista {
+  list-style-type: disc;
+  padding-left: 20px;
+  min-height: 50px;
+}
+
+.mes-botones {
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mes-botones button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.mes-botones button:hover {
+  background-color: #0056b3;
+}
+
+/* --- Comentarios --- */
+#comentarios-container {
+  margin-top: 20px;
+}
+
+#lista-comentarios li {
+  background-color: #fff;
+  padding: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 4px;
+  border-radius: 4px;
+}
+
+#agregar-comentario, #eliminar-comentario {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+#eliminar-comentario {
+  background-color: #dc3545;
+  margin-left: 5px;
+}
+
+#agregar-comentario:hover { background-color: #218838; }
+#eliminar-comentario:hover { background-color: #c82333; }
+
+/* --- Select mes comentarios --- */
+#mes-comentario {
+  margin-bottom: 10px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  #meses-container { flex-direction: column; width: 100%; }
+  .mes { width: 100%; }
+}
+.btn-panol {
+    background-color: #007acc;
     color: #fff;
-    font-weight: normal;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
 }
 
-input.costo-input {
-    width: 80px;
-    text-align: right;
-    padding: 4px;
-    border-radius: 3px;
-    border: 1px solid #ccc;
-}
-
-#searchInput {
-    padding: 4px;
-    width: 220px;
-    border-radius: 3px;
-    border: 1px solid #ccc;
-}
-
-#chartContainer {
-    margin-top: 25px;
-    margin-bottom: 10px;
-    width: 100%;
-    height: 500px;
-    position: relative;
-}
-
-.total-general {
-    font-weight: bold;
-    color: #333;
-    margin: 5px 0;
+.btn-panol:hover {
+    background-color: #005fa3;
 }
 
