@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pañol</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Pañol</h1>
+
+    <input type="file" id="excelFile" accept=".xlsx, .xls">
+
+    <div class="filters">
+        <label>Grupo: <select id="filterGrupo"><option value="">Todos</option></select></label>
+        <label>Cliente: <select id="filterCliente"><option value="">Todos</option></select></label>
+        <label>Código: <select id="filterCodigo"><option value="">Todos</option></select></label>
+        <label>Día: <select id="filterDay"><option value="">Todos</option></select></label>
+        <label>Mes: <select id="filterMonth"><option value="">Todos</option></select></label>
+        <label>Año: <select id="filterYear"><option value="">Todos</option></select></label>
+        <label>Buscar: <input type="text" id="searchInput" placeholder="Buscar..."></label>
+    </div>
+
+    <!-- Gráfico arriba -->
+    <div id="chartContainer">
+        <canvas id="clienteChart"></canvas>
+    </div>
+
+    <!-- Total general arriba de la tabla -->
+    <div id="totalGeneralTop" class="total-general">TOTAL GENERAL: 0,00</div>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Código</th>
+                <th>Detalle</th>
+                <th>Cantidad</th>
+                <th>Grupo</th>
+                <th>Costo Unitario</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+            <tr>
+                <th colspan="7" style="text-align:right">TOTAL GENERAL:</th>
+                <th id="totalGeneral">0,00</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
