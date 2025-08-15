@@ -355,4 +355,21 @@ td[contenteditable="true"] {
 .btn-panol:hover {
     background-color: #005fa3;
 }
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items:;
+    margin-bottom: 20px;
+}
+
+.header .logo {
+    max-width: 300px; /* tamaño del logo */
+    margin-bottom: 5px;
+}
+
+.header h1 {
+    font-size: 2em;
+    color: #333;
+    margin: 0;
+}
 
