@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presupuesto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <img src="logo.png" alt="Logo Pañol" class="logo">
+    </div>
+
+  <h1><center>Presupuesto Logística 2025</center></h1>
+
+  <!-- Tabla de Premisas -->
+  <h2>Premisas</h2>
+  <div id="premisas-container">
+    <table id="premisas-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Enero</th><th>Febrero</th><th>Marzo</th><th>Abril</th>
+          <th>Mayo</th><th>Junio</th><th>Julio</th><th>Agosto</th>
+          <th>Septiembre</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Inflación Proyectada</td>
+          <td>2,40%</td><td>2,20%</td><td>2,10%</td><td>1,90%</td>
+          <td>1,80%</td><td>1,60%</td><td>1,40%</td><td>1,30%</td>
+          <td>1,20%</td><td>1,15%</td><td>1,10%</td><td>1,10%</td>
+        </tr>
+        <tr>
+          <td>TC OFICIAL Proyectado</td>
+          <td>1.052,71</td><td>1.073,77</td><td>1.084,50</td><td>1.095,35</td>
+          <td>1.106,30</td><td>1.117,36</td><td>1.128,54</td><td>1.139,82</td>
+          <td>1.151,22</td><td>1.162,73</td><td>1.174,36</td><td>1.186,11</td>
+        </tr>
+        <tr>
+          <td>TC CCL Proyectado</td>
+          <td>1.168,51</td><td>1.182,81</td><td>1.172,94</td><td>1.162,77</td>
+          <td>1.152,90</td><td>1.164,86</td><td>1.176,74</td><td>1.188,99</td>
+          <td>1.201,38</td><td>1.213,90</td><td>1.197,19</td><td>1.209,40</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Presupuesto -->
+  <h2>Presupuesto</h2>
+  <div id="presupuesto-container">
+    <table id="presupuesto-table">
+      <thead>
+        <tr>
+          <th>Cuenta Contable</th>
+          <th>Mes Anterior</th><th>Enero</th><th>Febrero</th><th>Marzo</th><th>Abril</th>
+          <th>Mayo</th><th>Junio</th><th>Julio</th><th>Agosto</th>
+          <th>Septiembre</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
+          <th>Totales</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Gastos Extras</td><td></td><td class="fijo">18.678,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Descarga de Contenedores</td><td></td><td class="fijo">19.415.296,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos de Papelería y útiles</td><td></td><td class="fijo">763.561,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Alquileres pagados</td><td></td><td class="fijo">2.025.720,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos de Movilidad</td><td></td><td class="fijo">60.000,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos de Comidas y Refrigerios</td><td></td><td class="fijo">52.132,48</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Fletes Varios</td><td></td><td class="fijo">180.000,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Desagotadora Andino (Módulo)</td><td></td><td class="fijo">120.000,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Desagotadora Andino (Baño químico)</td><td></td><td class="fijo">15.000,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos de Embalaje</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Reclutamiento</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+ <h2>Gastos Reales</h2>
+  <div id="real-container">
+    <table id="real-table">
+      <thead>
+        <tr>
+          <th>Cuenta Contable</th>
+          <th>Enero</th><th>Febrero</th><th>Marzo</th><th>Abril</th>
+          <th>Mayo</th><th>Junio</th><th>Julio</th><th>Agosto</th>
+          <th>Septiembre</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
+          <th>Totales</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Gastos Extras</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Descarga de Contenedores</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos de Papelería y útiles</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Alquileres pagados</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos de Movilidad</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos de Comidas y Refrigerios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Fletes Varios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Desagotadora Andino (Módulo)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Desagotadora Andino (Baño químico)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Gastos de Embalaje</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Reclutamiento</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+<h2>Diferencia (Presupuesto - Gastos Reales)</h2>
+<div id="diferencia-container">
+  <table id="diferencia-table">
+    <thead>
+      <tr>
+        <th>Cuenta Contable</th>
+        <th>Enero</th><th>Febrero</th><th>Marzo</th><th>Abril</th>
+        <th>Mayo</th><th>Junio</th><th>Julio</th><th>Agosto</th>
+        <th>Septiembre</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
+        <th>Totales</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Gastos Extras</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Descarga de Contenedores</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Gastos de Papelería y útiles</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Alquileres pagados</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Gastos de Movilidad</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Gastos de Comidas y Refrigerios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Fletes Varios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Desagotadora Andino (Módulo)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Desagotadora Andino (Baño químico)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Gastos de Embalaje</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>Reclutamiento</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="comentarios-generales">
+  <label for="mes-comentario">Seleccionar mes:</label>
+  <select id="mes-comentario">
+    <option value="Enero">Enero</option>
+    <option value="Febrero">Febrero</option>
+    <option value="Marzo">Marzo</option>
+    <option value="Abril">Abril</option>
+    <option value="Mayo">Mayo</option>
+    <option value="Junio">Junio</option>
+    <option value="Julio">Julio</option>
+    <option value="Agosto">Agosto</option>
+    <option value="Septiembre">Septiembre</option>
+    <option value="Octubre">Octubre</option>
+    <option value="Noviembre">Noviembre</option>
+    <option value="Diciembre">Diciembre</option>
+  </select>
+
+  <button id="agregar-comentario">+ Agregar comentario</button>
+  <button id="eliminar-comentario">- Eliminar último comentario</button>
+  <button class="btn-panol" onclick="window.location.href='file:///C:/Users/lcrocetti/Desktop/Presupuesto/visor/visor.html'">Abrir Pañol</button>
+  <button id="export-config">Exportar Configuración</button>
+  <input type="file" id="import-config" style="display:none" />
+  <button id="import-btn">Importar Configuración</button>
+
+  <ul id="lista-comentarios" style="margin-top:10px;"></ul>
+</div>
+
+  <script src="script.js"></script>
+</body>
+</html>
