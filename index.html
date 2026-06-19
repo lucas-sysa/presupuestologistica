@@ -1,168 +1,741 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Presupuesto</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Presupuesto Logística - Control de Desvíos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root { 
+            /* Colores oficiales extraídos de la guía de marca */
+            --la-emilia-cyan: rgb(12, 175, 162);       /* Cian brillante oficial */
+            --la-emilia-teal-med: rgb(4, 109, 99);     /* Verde azulado medio oficial */
+            --la-emilia-teal-dark: rgb(4, 58, 53);     /* Verde azulado oscuro oficial */
+            --la-emilia-black: rgb(4, 40, 38);         /* Negro corporativo profundo */
+            --la-emilia-gray-light: rgb(231, 230, 230);/* Gris claro oficial */
+            
+            /* Mapeo de variables del sistema */
+            --p-blue: var(--la-emilia-teal-med); 
+            --r-green-light: var(--la-emilia-cyan); 
+            --a-green: var(--la-emilia-teal-dark); 
+            --dark: var(--la-emilia-black); 
+            --sidebar-bg: #121214;
+            --error: #ffebee; 
+            --error-text: #c62828; 
+            --saving-text: var(--la-emilia-teal-dark);
+            --saving-bg: rgba(12, 175, 162, 0.1);
+            --btn-bg: var(--la-emilia-teal-med);
+            --btn-hover: var(--la-emilia-teal-dark);
+            --btn-active: var(--la-emilia-black);
+            --text-muted: #9ca3af;
+        }
+        
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f4f6f9; margin: 0; display: flex; color: #1f2937; }
+        
+        .sidebar { width: 290px; background: var(--sidebar-bg); color: white; height: 100vh; position: fixed; padding: 30px 20px; box-sizing: border-box; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; border-right: 1px solid #27272a; }
+        .main { margin-left: 290px; padding: 25px; width: calc(100% - 290px); display: flex; justify-content: center; align-items: flex-start; }
+
+        .brand-section { margin-bottom: 25px; }
+        .brand-title { font-size: 1.4rem; font-weight: 700; color: #fff; margin: 0; letter-spacing: 0.5px; }
+        .brand-subtitle { font-size: 0.75rem; color: var(--text-muted); margin: 6px 0 0 0; text-transform: uppercase; letter-spacing: 1px; }
+
+        .brand-logo-reporte { height: 65px; width: auto; display: block; object-fit: contain; }
+
+        .sidebar-config-container { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #3f3f46; }
+        .sidebar-input-wrapper { display: flex; gap: 6px; margin-top: 6px; }
+        .config-input { flex: 1; padding: 10px; font-size: 0.85rem; background: #27272a; color: #f3f4f6; border: 1px solid #3f3f46; border-radius: 6px; font-family: inherit; font-weight: 600; outline: none; width: 100%; box-sizing: border-box; }
+        .config-input:focus { border-color: var(--btn-bg); }
+        .btn-save-sidebar { background: var(--btn-bg); color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.15s; }
+        .btn-save-sidebar:hover { background: var(--btn-hover); }
+
+        .selectors-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        .input-group { margin-bottom: 20px; }
+        .input-label { font-size: 0.75rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+        .select-custom { width: 100%; padding: 10px 12px; background: #27272a; color: #f3f4f6; border: 1px solid #3f3f46; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-family: inherit; transition: border-color 0.2s; outline: none; box-sizing: border-box; }
+        .select-custom:focus { border-color: var(--btn-bg); }
+
+        .btn-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
+        
+        .btn-prof { 
+            display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--btn-bg); color: white; border: 1px solid rgba(255,255,255,0.05); padding: 11px 16px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.2px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s; box-sizing: border-box;
+        }
+        .btn-prof:hover { background: var(--btn-hover); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .btn-prof:active { background: var(--btn-active); transform: scale(0.98); }
+        
+        .btn-prof-secondary { background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; }
+        .btn-prof-secondary:hover { background: #3f3f46; color: #fff; }
+
+        textarea { width: 100%; height: 110px; margin-top: 5px; border-radius: 6px; padding: 12px; border: 1px solid #3f3f46; background: #1e1e24; color: #f3f4f6; resize: none; box-sizing: border-box; font-family: inherit; font-size: 0.85rem; line-height: 1.4; outline: none; }
+        textarea:focus { border-color: var(--btn-bg); }
+        
+        .btn-prof-danger { background: transparent; color: #ef4444; border: none; padding: 6px 10px; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border-radius: 6px; transition: background-color 0.2s, color 0.2s; width: 100%; box-sizing: border-box; }
+        .btn-prof-danger:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+
+        .btn-prof-info { background: transparent; color: #38bdf8; border: none; padding: 6px 10px; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border-radius: 6px; transition: background-color 0.2s, color 0.2s; width: 100%; box-sizing: border-box; }
+        .btn-prof-info:hover { background: rgba(56, 189, 248, 0.1); color: #7dd3fc; }
+
+        #reporte-final { width: 850px; min-height: 1100px; padding: 50px; background: #fff; box-sizing: border-box; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-radius: 4px; }
+        .header-reporte { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--la-emilia-teal-dark); padding-bottom: 18px; margin-bottom: 25px; }
+        .header-info h1 { margin: 0; font-size: 1.6rem; color: var(--la-emilia-black); }
+        
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .kpi-grid-anual { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        
+        .kpi { 
+            border: 1px solid #e5e7eb; 
+            padding: 10px 4px; 
+            border-radius: 8px; 
+            text-align: center; 
+            background: #f9fafb; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            min-height: 75px; 
+            box-sizing: border-box;
+        }
+        .kpi h4 { 
+            margin: 0; 
+            font-size: 0.64rem; 
+            color: #6b7280; 
+            text-transform: uppercase; 
+            letter-spacing: 0.2px; 
+            font-weight: 600; 
+            line-height: 1.2; 
+        }
+        .val { 
+            font-size: 1.02rem; 
+            font-weight: 700; 
+            margin-top: 6px; 
+            color: var(--la-emilia-black); 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        
+        .seccion-titulo { font-size: 0.85rem; font-weight: 700; color: #374151; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; border-left: 3px solid var(--btn-bg); padding-left: 8px; margin-top: 15px; }
+        .chart-container { height: 320px; width: 100%; margin-bottom: 30px; position: relative; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-bottom: 25px; }
+        th { text-align: left; padding: 12px; background: var(--la-emilia-gray-light); border-bottom: 2px solid #cbd5e1; color: var(--la-emilia-black); font-weight: 600; }
+        td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+
+        .fila-rubro { cursor: pointer; transition: background-color 0.15s; }
+        .fila-rubro:hover { background-color: #f8fafc; }
+        .fila-exceso { background-color: var(--error) !important; color: var(--error-text); }
+        .fila-exceso:hover { background-color: #fecdd3 !important; }
+
+        .badge-alerta { background: var(--error-text); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; margin-left: 8px; font-weight: 700; }
+        .badge-comentario { background: #4b5563; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; margin-left: 8px; font-weight: 600; font-family: sans-serif; display: inline-flex; align-items: center; gap: 3px; }
+        .badge-vacio { color: #9ca3af; font-style: italic; font-size: 0.85rem; }
+
+        .footer-reporte { margin-top: auto; padding-top: 20px; }
+        .display-comentarios { font-size: 0.92rem; padding: 18px; border-left: 4px solid var(--la-emilia-teal-dark); background: #f9fafb; font-style: italic; margin-bottom: 30px; white-space: pre-wrap; color: #374151; line-height: 1.5; border-radius: 0 6px 6px 0; }
+        
+        .firmas { display: flex; justify-content: space-between; gap: 80px; margin-top: 25px; }
+        .firma-box { border-top: 1.5px solid var(--la-emilia-black); flex: 1; text-align: center; padding-top: 10px; font-size: 0.82rem; font-weight: 600; color: #374151; }
+
+        .txt-ahorro { color: var(--la-emilia-teal-dark); }
+        .txt-exceso { color: var(--error-text); }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 760px; max-height: 85vh; padding: 35px; border-radius: 10px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); overflow-y: auto; position: relative; }
+        .close-modal { position: absolute; top: 18px; right: 22px; font-size: 1.5rem; cursor: pointer; color: #9ca3af; }
+
+        .modal-corto { width: 500px; }
+        .modal-textarea { width: 100%; height: 120px; background: #fff; color: #1f2937; border: 1px solid #cbd5e1; margin-bottom: 15px; margin-top: 10px; border-radius: 6px; padding: 10px; box-sizing: border-box; font-family: inherit; resize: none; outline: none; }
+        .modal-textarea:focus { border-color: var(--btn-bg); }
+
+        @media print {
+            body { background: white; }
+            .sidebar, .modal-overlay { display: none !important; }
+            .main { margin-left: 0 !important; width: 100% !important; padding: 0; }
+            #reporte-final { box-shadow: none !important; width: 100%; padding: 0; }
+            .badge-comentario { display: none !important; }
+        }
+    </style>
 </head>
 <body>
-    <div class="header">
-        <img src="Logo.png" alt="Logo Pañol" class="logo">
+
+<div class="sidebar">
+    <div class="brand-section">
+        <h2 class="brand-title">LA EMILIA</h2>
+        <p class="brand-subtitle">Control Presupuestario</p>
     </div>
-
-  <h1><center>Presupuesto Logística 2025</center></h1>
-
-  <!-- Tabla de Premisas -->
-  <h2>Premisas</h2>
-  <div id="premisas-container">
-    <table id="premisas-table">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Enero</th><th>Febrero</th><th>Marzo</th><th>Abril</th>
-          <th>Mayo</th><th>Junio</th><th>Julio</th><th>Agosto</th>
-          <th>Septiembre</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Inflación Proyectada</td>
-          <td>2,40%</td><td>2,20%</td><td>2,10%</td><td>1,90%</td>
-          <td>1,80%</td><td>1,60%</td><td>1,40%</td><td>1,30%</td>
-          <td>1,20%</td><td>1,15%</td><td>1,10%</td><td>1,10%</td>
-        </tr>
-        <tr>
-          <td>TC OFICIAL Proyectado</td>
-          <td>1.052,71</td><td>1.073,77</td><td>1.084,50</td><td>1.095,35</td>
-          <td>1.106,30</td><td>1.117,36</td><td>1.128,54</td><td>1.139,82</td>
-          <td>1.151,22</td><td>1.162,73</td><td>1.174,36</td><td>1.186,11</td>
-        </tr>
-        <tr>
-          <td>TC CCL Proyectado</td>
-          <td>1.168,51</td><td>1.182,81</td><td>1.172,94</td><td>1.162,77</td>
-          <td>1.152,90</td><td>1.164,86</td><td>1.176,74</td><td>1.188,99</td>
-          <td>1.201,38</td><td>1.213,90</td><td>1.197,19</td><td>1.209,40</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Presupuesto -->
-  <h2>Presupuesto</h2>
-  <div id="presupuesto-container">
-    <table id="presupuesto-table">
-      <thead>
-        <tr>
-          <th>Cuenta Contable</th>
-          <th>Mes Anterior</th><th>Enero</th><th>Febrero</th><th>Marzo</th><th>Abril</th>
-          <th>Mayo</th><th>Junio</th><th>Julio</th><th>Agosto</th>
-          <th>Septiembre</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
-          <th>Totales</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Gastos Extras</td><td></td><td class="fijo">18.678,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Descarga de Contenedores</td><td></td><td class="fijo">19.415.296,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Gastos de Papelería y útiles</td><td></td><td class="fijo">763.561,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Alquileres pagados</td><td></td><td class="fijo">2.025.720,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Gastos de Movilidad</td><td></td><td class="fijo">60.000,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Gastos de Comidas y Refrigerios</td><td></td><td class="fijo">52.132,48</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Fletes Varios</td><td></td><td class="fijo">180.000,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Desagotadora Andino (Módulo)</td><td></td><td class="fijo">120.000,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Desagotadora Andino (Baño químico)</td><td></td><td class="fijo">15.000,00</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Gastos de Embalaje</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Reclutamiento</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      </tbody>
-    </table>
-  </div>
-
- <h2>Gastos Reales</h2>
-  <div id="real-container">
-    <table id="real-table">
-      <thead>
-        <tr>
-          <th>Cuenta Contable</th>
-          <th>Enero</th><th>Febrero</th><th>Marzo</th><th>Abril</th>
-          <th>Mayo</th><th>Junio</th><th>Julio</th><th>Agosto</th>
-          <th>Septiembre</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
-          <th>Totales</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Gastos Extras</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Descarga de Contenedores</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Gastos de Papelería y útiles</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Alquileres pagados</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Gastos de Movilidad</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Gastos de Comidas y Refrigerios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Fletes Varios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Desagotadora Andino (Módulo)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Desagotadora Andino (Baño químico)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Gastos de Embalaje</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Reclutamiento</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-<h2>Diferencia (Presupuesto - Gastos Reales)</h2>
-<div id="diferencia-container">
-  <table id="diferencia-table">
-    <thead>
-      <tr>
-        <th>Cuenta Contable</th>
-        <th>Enero</th><th>Febrero</th><th>Marzo</th><th>Abril</th>
-        <th>Mayo</th><th>Junio</th><th>Julio</th><th>Agosto</th>
-        <th>Septiembre</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th>
-        <th>Totales</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>Gastos Extras</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Descarga de Contenedores</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Gastos de Papelería y útiles</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Alquileres pagados</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Gastos de Movilidad</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Gastos de Comidas y Refrigerios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Fletes Varios</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Desagotadora Andino (Módulo)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Desagotadora Andino (Baño químico)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Gastos de Embalaje</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td>Reclutamiento</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-    </tbody>
-  </table>
+    
+    <div class="sidebar-config-container">
+        <label class="input-label">Ppto Total Anual ($)</label>
+        <div class="sidebar-input-wrapper">
+            <input type="number" id="inputPptoAnual" class="config-input" placeholder="Ej: 293758775">
+            <button class="btn-save-sidebar" onclick="guardarPptoAnualFijo()" title="Guardar Presupuesto">
+                <i data-lucide="save" style="width:16px; height:16px;"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="selectors-container">
+        <div>
+            <label class="input-label">Año</label>
+            <select id="anioSel" class="select-custom" onchange="cambiarPeriodoGlobal()">
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+            </select>
+        </div>
+        <div>
+            <label class="input-label">Mes</label>
+            <select id="mesSel" class="select-custom" onchange="render()">
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+        </div>
+    </div>
+    
+    <input type="file" id="fileIn" style="display:none" onchange="procesar(event)">
+    <input type="file" id="fileJsonIn" style="display:none" accept=".json" onchange="importarDatosJson(event)">
+    
+    <div class="btn-container">
+        <button class="btn-prof" onclick="document.getElementById('fileIn').click()">
+            <i data-lucide="file-spreadsheet" style="width:16px; height:16px;"></i> Cargar datos Excel
+        </button>
+        <button class="btn-prof btn-prof-secondary" onclick="document.getElementById('fileJsonIn').click()">
+            <i data-lucide="upload" style="width:16px; height:16px;"></i> Importar datos (.json)
+        </button>
+        <button class="btn-prof btn-prof-secondary" onclick="abrirHistorial()">
+            <i data-lucide="bar-chart-3" style="width:16px; height:16px;"></i> Ver historial del año
+        </button>
+        <button class="btn-prof btn-prof-secondary" onclick="window.print()">
+            <i data-lucide="printer" style="width:16px; height:16px;"></i> Imprimir reporte
+        </button>
+    </div>
+    
+    <div class="input-group" style="margin-bottom: 10px;">
+        <label class="input-label">Análisis General de Desvíos</label>
+        <textarea id="inputComentarios" placeholder="Escriba aquí las causas globales..." oninput="guardarComentario()"></textarea>
+    </div>
+    
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 2px;">
+        <button class="btn-prof-info" onclick="exportarDatosJson()">
+            <i data-lucide="download" style="width:14px; height:14px;"></i> Exportar datos del año
+        </button>
+        <button class="btn-prof-danger" onclick="limpiarMes()">
+            <i data-lucide="trash-2" style="width:14px; height:14px;"></i> Borrar mes seleccionado
+        </button>
+        <button class="btn-prof-danger" style="color: #f43f5e;" onclick="limpiarTodoElAnio()">
+            <i data-lucide="alert-triangle" style="width:14px; height:14px;"></i> Borrar TODO el Año Actual
+        </button>
+    </div>
 </div>
 
-<div id="comentarios-generales">
-  <label for="mes-comentario">Seleccionar mes:</label>
-  <select id="mes-comentario">
-    <option value="Enero">Enero</option>
-    <option value="Febrero">Febrero</option>
-    <option value="Marzo">Marzo</option>
-    <option value="Abril">Abril</option>
-    <option value="Mayo">Mayo</option>
-    <option value="Junio">Junio</option>
-    <option value="Julio">Julio</option>
-    <option value="Agosto">Agosto</option>
-    <option value="Septiembre">Septiembre</option>
-    <option value="Octubre">Octubre</option>
-    <option value="Noviembre">Noviembre</option>
-    <option value="Diciembre">Diciembre</option>
-  </select>
+<div class="main">
+    <div id="reporte-final">
+        <div class="header-reporte">
+            <img src="Logo.png" alt="La Emilia" class="brand-logo-reporte">
+            <div class="header-info" style="text-align: right;">
+                <h1 id="tit-mes">Gestión Mensual - Logística</h1>
+                <p id="tit-anio-fiscal" style="margin:4px 0 0 0; font-size: 0.9rem; color: #555; font-weight: 600;">Año Fiscal 2026</p>
+            </div>
+        </div>
 
-  <button id="agregar-comentario">+ Agregar comentario</button>
-  <button id="eliminar-comentario">- Eliminar último comentario</button>
-  <button class="btn-panol" onclick="window.location.href='file:///C:/Users/lcrocetti/Desktop/Presupuesto/visor/visor.html'">Abrir Pañol</button>
-  <button id="export-config">Exportar Configuración</button>
-  <input type="file" id="import-config" style="display:none" />
-  <button id="import-btn">Importar Configuración</button>
+        <div class="seccion-titulo" id="tit-seccion-anual">Acumulado Anual 2026</div>
+        
+        <div class="kpi-grid-anual">
+            <div class="kpi"><h4>Presupuesto Total Anual</h4><div class="val" style="color: var(--la-emilia-teal-med);" id="k-p-total-fijo">$0</div></div>
+            <div class="kpi"><h4>Presupuesto Acumulado</h4><div class="val" id="k-p-anual">$0</div></div>
+            <div class="kpi"><h4>Real Acumulado</h4><div class="val" id="k-r-anual">$0</div></div>
+            <div class="kpi"><h4>Presupuesto Disponible</h4><div class="val" id="k-p-disponible">$0</div></div>
+        </div>
 
-  <ul id="lista-comentarios" style="margin-top:10px;"></ul>
+        <div class="chart-container">
+            <canvas id="tripleBarChart"></canvas>
+        </div>
+
+        <div class="seccion-titulo" id="tit-seccion-mes">Detalle del Mes</div>
+        <div class="kpi-grid">
+            <div class="kpi"><h4>Presupuesto</h4><div class="val" id="k-p">$0</div></div>
+            <div class="kpi"><h4>Gasto Real</h4><div class="val" id="k-r">$0</div></div>
+            <div class="kpi"><h4>Diferencia</h4><div class="val" id="k-a">$0</div></div>
+            <div class="kpi"><h4>T. Cambio (USD)</h4><div class="val" id="k-tc">$0</div></div>
+        </div>
+
+        <div style="font-size: 0.75rem; margin-bottom: 12px; color: #666; font-weight: bold;">
+            * Rubros en <span style="color:var(--error-text)">ROJO</span> indican exceso sobre presupuesto. Hacé clic sobre cualquier rubro para agregar o ver notas específicas.
+        </div>
+
+        <table id="tablaAudit">
+            <thead>
+                <tr>
+                    <th style="width: 45%;">DESCRIPCIÓN DEL RUBRO (MES SELECCIONADO)</th>
+                    <th>PRESUPUESTO</th>
+                    <th>REAL</th>
+                    <th style="text-align:right">DIFERENCIA (±)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="footer-reporte">
+            <h3 style="font-size: 0.9rem; color: #333; margin-bottom: 10px;">OBSERVACIONES Y JUSTIFICACIÓN DE DESVÍOS:</h3>
+            <div id="displayComentarios" class="display-comentarios">Sin observaciones para este período.</div>
+            
+            <div class="firmas">
+                <div class="firma-box">Responsable de Operaciones</div>
+                <div class="firma-box">Gerencia de Administración</div>
+            </div>
+        </div>
+    </div>
 </div>
 
-  <script src="script.js"></script>
+<!-- Modal Historial Global -->
+<div id="modalHistorial" class="modal-overlay" onclick="cerrarHistorial(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-modal" onclick="document.getElementById('modalHistorial').style.display='none'">&times;</span>
+        <h2 id="tit-modal-historial" style="margin-top:0; color: #111827; font-size: 1.3rem; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+            📊 Marcha del Año (Histórico Acumulado)
+        </h2>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">
+            Resumen global de la ejecución presupuestaria cargada hasta el momento.
+        </p>
+        
+        <table id="tablaHistorialAnual" style="margin-bottom:0;">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">MES</th>
+                    <th>PRESUPUESTO TOTAL</th>
+                    <th>GASTO REAL TOTAL</th>
+                    <th>DIFERENCIA</th>
+                    <th style="text-align:right">T.C. (USD)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Comentario por Rubro Individual -->
+<div id="modalRubroComentario" class="modal-overlay" onclick="cerrarModalRubro(event)">
+    <div class="modal-content modal-corto" onclick="event.stopPropagation()">
+        <span class="close-modal" onclick="document.getElementById('modalRubroComentario').style.display='none'">&times;</span>
+        <h2 id="rubroModalTitulo" style="margin-top:0; color: #111827; font-size: 1.2rem; padding-right: 20px;">Comentarios del Rubro</h2>
+        <p style="font-size: 0.8rem; color: #666; margin: 0;">Agregá justificaciones o notas de auditoría específicas para este ítem.</p>
+        
+        <input type="hidden" id="rubroModalKey">
+        <textarea id="rubroModalTexto" class="modal-textarea" placeholder="Escribí acá el motivo del desvío, ajustes o notas..."></textarea>
+        
+        <div style="display:flex; justify-content: flex-end; gap: 8px;">
+            <button class="btn-prof btn-prof-secondary" style="width:auto; padding: 8px 15px;" onclick="document.getElementById('modalRubroComentario').style.display='none'">Cancelar</button>
+            <button class="btn-prof" style="width:auto; padding: 8px 15px;" onclick="guardarComentarioRubro()">Guardar Nota</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let miChart = null;
+const mesesNombresFull = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const mesesPrefijos = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+
+function getClaveStorage() {
+    const anio = document.getElementById('anioSel').value;
+    return `bi_v_${anio}_data`;
+}
+
+function getHistorial() {
+    return JSON.parse(localStorage.getItem(getClaveStorage()) || '{}');
+}
+
+function cambiarPeriodoGlobal() {
+    render();
+}
+
+function procesar(e) {
+    const reader = new FileReader();
+    const mesIdx = parseInt(document.getElementById('mesSel').value);
+    const anioTexto = document.getElementById('anioSel').value;
+    const prefijoMes = mesesPrefijos[mesIdx - 1];
+    
+    reader.onload = (evt) => {
+        const wb = XLSX.read(evt.target.result, {type: 'binary'});
+        if (!wb.Sheets["PREMISAS"] || !wb.Sheets["REAL VS PRESUP"]) {
+            alert("Error: El Excel debe contener las hojas 'PREMISAS' y 'REAL VS PRESUP'."); return;
+        }
+
+        const pD = XLSX.utils.sheet_to_json(wb.Sheets["PREMISAS"], {header: 1});
+        const rD = XLSX.utils.sheet_to_json(wb.Sheets["REAL VS PRESUP"], {header: 1});
+        
+        let colP = -1;
+        let colR = -1;
+        
+        for (let r = 0; r < Math.min(rD.length, 12); r++) {
+            const fila = rD[r];
+            for (let c = 0; c < fila.length; c++) {
+                const celdaTexto = String(fila[c] || "").toUpperCase().trim();
+                if ((celdaTexto.includes("PPTO") || celdaTexto.includes("PRESU")) && celdaTexto.includes(prefijoMes)) {
+                    colP = c;
+                }
+                if (celdaTexto.includes("REAL") && celdaTexto.includes(prefijoMes)) {
+                    colR = c;
+                }
+            }
+            if (colP !== -1 && colR !== -1) break; 
+        }
+
+        if (colP === -1 || colR === -1) {
+            colP = (mesIdx * 2) - 1;
+            colR = (mesIdx * 2);
+        }
+        
+        let rubros = [], tR = 0, tP = 0;
+        
+        rD.forEach((fila, i) => {
+            const rubro = (fila[0] || "").toString().trim();
+            if (i >= 7 && rubro && !rubro.toUpperCase().includes("TOTAL") && !rubro.toUpperCase().includes("ACUMULADO")) {
+                const p = parseFloat(fila[colP]) || 0;
+                const r = parseFloat(fila[colR]) || 0;
+                
+                if (p !== 0 || r !== 0) { 
+                    rubros.push({ rubro, p, r }); 
+                    tR += r; 
+                    tP += p; 
+                }
+            }
+        });
+        
+        let hist = getHistorial();
+        const comentarioPrevio = hist[mesIdx] ? hist[mesIdx].comentario : "";
+        const notasRubrosPrevias = (hist[mesIdx] && hist[mesIdx].notasRubros) ? hist[mesIdx].notasRubros : {};
+        
+        hist[mesIdx] = { 
+            tP, 
+            tR, 
+            tc: pD[3] ? (parseFloat(pD[3][2]) || 0) : 0, 
+            rubros, 
+            comentario: comentarioPrevio,
+            notasRubros: notasRubrosPrevias
+        };
+        
+        localStorage.setItem(getClaveStorage(), JSON.stringify(hist));
+        render();
+        alert(`¡Datos de ${document.getElementById('mesSel').options[document.getElementById('mesSel').selectedIndex].text} ${anioTexto} cargados con éxito!`);
+        e.target.value = "";
+    };
+    reader.readAsBinaryString(e.target.files[0]);
+}
+
+function render() {
+    const hist = getHistorial();
+    const mesIdx = document.getElementById('mesSel').value;
+    const anioVal = document.getElementById('anioSel').value;
+    const mesTexto = document.getElementById('mesSel').options[document.getElementById('mesSel').selectedIndex].text;
+    const d = hist[mesIdx] || { tP:0, tR:0, tc:0, rubros:[], comentario: "", notasRubros: {} };
+    if (!d.notasRubros) d.notasRubros = {};
+    
+    document.getElementById('tit-mes').innerText = `Gestión Mensual - ${mesTexto} ${anioVal}`;
+    document.getElementById('tit-anio-fiscal').innerText = `Año Fiscal ${anioVal}`;
+    document.getElementById('tit-seccion-anual').innerText = `Acumulado Anual ${anioVal}`;
+    document.getElementById('tit-modal-historial').innerText = `📊 Marcha del Año ${anioVal} (Histórico Acumulado)`;
+    document.getElementById('tit-seccion-mes').innerText = `Detalle de ${mesTexto}`;
+    
+    document.getElementById('k-p').innerText = "$" + Math.round(d.tP).toLocaleString();
+    document.getElementById('k-r').innerText = "$" + Math.round(d.tR).toLocaleString();
+    
+    const ahorroMensual = d.tP - d.tR;
+    const kA = document.getElementById('k-a');
+    kA.innerText = "$" + Math.round(Math.abs(ahorroMensual)).toLocaleString();
+    kA.className = "val " + (ahorroMensual >= 0 ? "txt-ahorro" : "txt-exceso");
+    
+    document.getElementById('k-tc').innerText = "$" + (d.tc || 0).toLocaleString();
+
+    let totalPAnual = 0; 
+    let totalRAnual = 0; 
+    
+    for (let i = 1; i <= 12; i++) {
+        if (hist[i]) {
+            totalPAnual += hist[i].tP;
+            totalRAnual += hist[i].tR;
+        }
+    }
+
+    const pptoAnualFijo = hist.pptoAnualFijo || 0;
+    document.getElementById('k-p-total-fijo').innerText = pptoAnualFijo > 0 ? "$" + Math.round(pptoAnualFijo).toLocaleString() : "$ ---";
+    document.getElementById('inputPptoAnual').value = pptoAnualFijo > 0 ? pptoAnualFijo : "";
+
+    const pptoDisponibleRestante = pptoAnualFijo - totalPAnual;
+    const kPDisponible = document.getElementById('k-p-disponible');
+    kPDisponible.innerText = pptoAnualFijo > 0 ? "$" + Math.round(Math.abs(pptoDisponibleRestante)).toLocaleString() : "$ ---";
+    
+    if (pptoAnualFijo > 0) {
+        kPDisponible.className = "val " + (pptoDisponibleRestante >= 0 ? "txt-ahorro" : "txt-exceso");
+    } else {
+        kPDisponible.className = "val";
+    }
+
+    document.getElementById('k-p-anual').innerText = "$" + Math.round(totalPAnual).toLocaleString();
+    document.getElementById('k-r-anual').innerText = "$" + Math.round(totalRAnual).toLocaleString();
+    
+    document.getElementById('inputComentarios').value = d.comentario || "";
+    document.getElementById('displayComentarios').innerText = d.comentario || "Sin observaciones registradas para este período.";
+
+    const rubrosOrdenados = [...d.rubros].sort((a, b) => (a.p - a.r) - (b.p - b.r));
+    document.querySelector("#tablaAudit tbody").innerHTML = rubrosOrdenados.map(r => {
+        const dif = r.p - r.r;
+        const esExceso = dif < 0;
+        const tieneNota = d.notasRubros && d.notasRubros[r.rubro];
+        const badgeNota = tieneNota ? `<span class="badge-comentario" title="${d.notasRubros[r.rubro]}"><i data-lucide="message-square" style="width:10px; height:10px;"></i> Nota</span>` : '';
+
+        return `<tr class="fila-rubro ${esExceso ? 'fila-exceso' : ''}" onclick="abrirModalRubro('${r.rubro.replace(/'/g, "\\'")}')">
+            <td style="font-weight:600">${r.rubro} ${esExceso ? '<span class="badge-alerta">EXCESO</span>' : ''} ${badgeNota}</td>
+            <td>$${Math.round(r.p).toLocaleString()}</td>
+            <td>$${Math.round(r.r).toLocaleString()}</td>
+            <td style="text-align:right; font-weight:bold; color: ${esExceso ? 'var(--error-text)' : 'var(--la-emilia-teal-dark)'}">
+                $${Math.round(Math.abs(dif)).toLocaleString()}
+            </td>
+        </tr>`;
+    }).join('');
+
+    let HTMLHistorial = "";
+    for(let i = 1; i <= 12; i++) {
+        const mesData = hist[i];
+        const nombreMes = mesesNombresFull[i - 1];
+        const esMesActualActivo = (i == mesIdx) ? 'style="background-color: rgba(12, 175, 162, 0.1); font-weight: bold; border-left: 4px solid var(--la-emilia-teal-med);"' : '';
+
+        if (mesData) {
+            const dif = mesData.tP - mesData.tR;
+            HTMLHistorial += `<tr ${esMesActualActivo}>
+                <td>${nombreMes}${dif < 0 ? ' <span class="badge-alerta">EXCESO</span>' : ''}</td>
+                <td>$${Math.round(mesData.tP).toLocaleString()}</td>
+                <td>$${Math.round(mesData.tR).toLocaleString()}</td>
+                <td style="color: ${dif < 0 ? 'var(--error-text)' : 'var(--la-emilia-teal-dark)'}; font-weight: bold;">
+                    ${dif >= 0 ? '+' : '-'}$${Math.round(Math.abs(dif)).toLocaleString()}
+                </td>
+                <td style="text-align:right">$${mesData.tc.toLocaleString()}</td>
+            </tr>`;
+        } else {
+            HTMLHistorial += `<tr ${esMesActualActivo}>
+                <td>${nombreMes}</td>
+                <td colspan="3" class="badge-vacio">Sin datos cargados</td>
+                <td style="text-align:right" class="badge-vacio">-</td>
+            </tr>`;
+        }
+    }
+    document.querySelector("#tablaHistorialAnual tbody").innerHTML = HTMLHistorial;
+
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+    renderChart(hist);
+}
+
+function abrirModalRubro(nombreRubro) {
+    const hist = getHistorial();
+    const mesIdx = document.getElementById('mesSel').value;
+    const d = hist[mesIdx] || { notasRubros: {} };
+    if (!d.notasRubros) d.notasRubros = {};
+
+    document.getElementById('rubroModalTitulo').innerText = `Nota sobre: ${nombreRubro}`;
+    document.getElementById('rubroModalKey').value = nombreRubro;
+    document.getElementById('rubroModalTexto').value = d.notasRubros[nombreRubro] || "";
+    
+    document.getElementById('modalRubroComentario').style.display = 'flex';
+}
+
+function guardarComentarioRubro() {
+    const hist = getHistorial();
+    const mesIdx = document.getElementById('mesSel').value;
+    const nombreRubro = document.getElementById('rubroModalKey').value;
+    const textoNota = document.getElementById('rubroModalTexto').value.trim();
+
+    if (!hist[mesIdx]) {
+        hist[mesIdx] = { tP: 0, tR: 0, tc: 0, rubros: [], comentario: "", notasRubros: {} };
+    }
+    if (!hist[mesIdx].notasRubros) {
+        hist[mesIdx].notasRubros = {};
+    }
+
+    if(textoNota === "") {
+        delete hist[mesIdx].notasRubros[nombreRubro];
+    } else {
+        hist[mesIdx].notasRubros[nombreRubro] = textoNota;
+    }
+
+    localStorage.setItem(getClaveStorage(), JSON.stringify(hist));
+    document.getElementById('modalRubroComentario').style.display = 'none';
+    render();
+}
+
+function cerrarModalRubro(e) { 
+    if(e.target.id === 'modalRubroComentario') document.getElementById('modalRubroComentario').style.display = 'none'; 
+}
+
+function guardarPptoAnualFijo() {
+    const valorInput = parseFloat(document.getElementById('inputPptoAnual').value);
+    if (isNaN(valorInput) || valorInput <= 0) {
+        alert("Por favor, ingrese un número presupuestario válido mayor a cero.");
+        return;
+    }
+    
+    let hist = getHistorial();
+    hist.pptoAnualFijo = valorInput;
+    localStorage.setItem(getClaveStorage(), JSON.stringify(hist));
+    render();
+    alert("¡Presupuesto Total Anual guardado de forma constante para este año!");
+}
+
+function renderChart(hist) {
+    const ctx = document.getElementById('tripleBarChart').getContext('2d');
+    if(miChart) miChart.destroy();
+    
+    const currentMes = parseInt(document.getElementById('mesSel').value);
+    const dataP = [], dataR = [], dataD = [];
+    const mesesLabels = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    const bgP = [], bgR = [], bgD = [], linePointRadius = [], linePointBg = [];
+    
+    for(let i=1; i<=12; i++){
+        const m = hist[i];
+        const pVal = m ? m.tP : 0;
+        const rVal = m ? m.tR : 0;
+        const dVal = m ? (m.tP - m.tR) : 0;
+        
+        dataP.push(pVal); dataR.push(rVal); dataD.push(dVal);
+        const esMesActivo = (i === currentMes);
+        
+        // COLORES EXACTOS DE LA GUÍA DE MARCA (Mapeados según barra activa/inactiva)
+        bgP.push(esMesActivo ? 'rgba(4, 109, 99, 1)' : 'rgba(4, 109, 99, 0.25)');   /* Ppto: Verde azulado medio */
+        bgR.push(esMesActivo ? 'rgba(12, 175, 162, 1)' : 'rgba(12, 175, 162, 0.25)'); /* Real: Cian brillante */
+        
+        // Diferencia (±): Si es ahorro usamos verde oscuro corporativo. Si es exceso se mantiene alerta roja atenuada.
+        if (dVal >= 0) {
+            bgD.push(esMesActivo ? 'rgba(4, 58, 53, 1)' : 'rgba(4, 58, 53, 0.25)');   /* Ahorro: Verde oscuro oficial */
+        } else {
+            bgD.push(esMesActivo ? 'rgba(211, 47, 47, 1)' : 'rgba(211, 47, 47, 0.25)'); /* Exceso: Alerta */
+        }
+        
+        linePointRadius.push(esMesActivo ? 7 : 4);
+        linePointBg.push(esMesActivo ? 'rgb(4, 40, 38)' : 'rgba(4, 40, 38, 0.4)'); /* Puntos de línea usando el negro oficial */
+    }
+
+    miChart = new Chart(ctx, {
+        data: {
+            labels: mesesLabels,
+            datasets: [
+                { type: 'line', label: 'Tendencia Gasto Real', data: dataR, borderColor: 'rgba(4, 40, 38, 0.8)', borderWidth: 3, pointBackgroundColor: linePointBg, pointBorderColor: linePointBg, pointRadius: linePointRadius, tension: 0.3, fill: false, order: 1 },
+                { type: 'bar', label: 'Ppto', data: dataP, backgroundColor: bgP, order: 2 }, 
+                { type: 'bar', label: 'Real', data: dataR, backgroundColor: bgR, order: 2 },
+                { type: 'bar', label: 'Diferencia (±)', data: dataD, backgroundColor: bgD, order: 2 }
+            ]
+        },
+        options: { 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } 
+            }, 
+            scales: { 
+                y: { beginAtZero: true, ticks: { callback: (val) => '$' + val.toLocaleString() } } 
+            } 
+        }
+    });
+}
+
+function abrirHistorial() { document.getElementById('modalHistorial').style.display = 'flex'; }
+function cerrarHistorial(e) { if(e.target.id === 'modalHistorial') document.getElementById('modalHistorial').style.display = 'none'; }
+
+function guardarComentario() {
+    const mesIdx = document.getElementById('mesSel').value;
+    const texto = document.getElementById('inputComentarios').value;
+    let hist = getHistorial();
+    
+    if (!hist[mesIdx]) {
+        hist[mesIdx] = { tP: 0, tR: 0, tc: 0, rubros: [], comentario: "", notasRubros: {} };
+    }
+    
+    hist[mesIdx].comentario = texto;
+    localStorage.setItem(getClaveStorage(), JSON.stringify(hist));
+    document.getElementById('displayComentarios').innerText = texto || "Sin observaciones para este período.";
+}
+
+function limpiarMes() {
+    const mesSel = document.getElementById('mesSel');
+    const mesIdx = mesSel.value;
+    const mesTexto = mesSel.options[mesSel.selectedIndex].text;
+    const anioVal = document.getElementById('anioSel').value;
+    let hist = getHistorial();
+    
+    if (hist[mesIdx]) {
+        if (confirm(`¿Seguro que deseas borrar los datos de ${mesTexto} ${anioVal}?`)) { 
+            delete hist[mesIdx];
+            localStorage.setItem(getClaveStorage(), JSON.stringify(hist)); 
+            render();
+            alert(`Datos de ${mesTexto} ${anioVal} eliminados.`);
+        }
+    } else {
+        alert(`No hay datos para borrar en ${mesTexto} ${anioVal}.`);
+    }
+}
+
+function limpiarTodoElAnio() {
+    const anioVal = document.getElementById('anioSel').value;
+    if (confirm(`⚠️ ALERTA: ¿Estás seguro de que querés borrar COMPLETAMENTE todos los meses cargados en el año ${anioVal}?`)) {
+        localStorage.removeItem(`bi_v_${anioVal}_data`);
+        render();
+        alert(`El historial completo del año ${anioVal} fue reseteado.`);
+    }
+}
+
+function exportarDatosJson() {
+    const clanioVal = document.getElementById('anioSel').value;
+    const hist = getHistorial();
+    
+    if (Object.keys(hist).length === 0) {
+        alert(`No hay datos cargados en el año ${clanioVal} para exportar.`);
+        return;
+    }
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(hist, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `config_presupuesto_${clanioVal}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+}
+
+function importarDatosJson(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const anioVal = document.getElementById('anioSel').value;
+    const reader = new FileReader();
+    
+    reader.onload = (evt) => {
+        try {
+            const datosImportados = JSON.parse(evt.target.result);
+            if (typeof datosImportados !== 'object') throw new Error();
+            
+            if (confirm(`¿Estás seguro de que deseas importar esta configuración? Esto reemplazará TODOS los datos cargados para el año ${anioVal}.`)) {
+                localStorage.setItem(getClaveStorage(), JSON.stringify(datosImportados));
+                render();
+                alert(`¡Configuración del año ${anioVal} importada con éxito!`);
+            }
+        } catch (error) {
+            alert("Error: El archivo no es un formato válido.");
+        }
+        e.target.value = "";
+    };
+    reader.readAsText(file);
+}
+
+window.onload = () => {
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+    render();
+};
+</script>
 </body>
 </html>
-
