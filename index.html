@@ -607,11 +607,10 @@ function renderChart(hist) {
         dataP.push(pVal); dataR.push(rVal); dataD.push(dVal);
         const esMesActivo = (i === currentMes);
         
-        // COLORES EXACTOS DE LA GUÍA DE MARCA (Mapeados según barra activa/inactiva)
+        // COLORES EXACTOS DE LA GUÍA DE MARCA
         bgP.push(esMesActivo ? 'rgba(4, 109, 99, 1)' : 'rgba(4, 109, 99, 0.25)');   /* Ppto: Verde azulado medio */
         bgR.push(esMesActivo ? 'rgba(12, 175, 162, 1)' : 'rgba(12, 175, 162, 0.25)'); /* Real: Cian brillante */
         
-        // Diferencia (±): Si es ahorro usamos verde oscuro corporativo. Si es exceso se mantiene alerta roja atenuada.
         if (dVal >= 0) {
             bgD.push(esMesActivo ? 'rgba(4, 58, 53, 1)' : 'rgba(4, 58, 53, 0.25)');   /* Ahorro: Verde oscuro oficial */
         } else {
@@ -732,8 +731,29 @@ function importarDatosJson(e) {
     reader.readAsText(file);
 }
 
-window.onload = () => {
+// LOGICA INTEGRADA PARA LECTURA AUTOMÁTICA EN GITHUB
+window.onload = async () => {
     if(typeof lucide !== 'undefined') lucide.createIcons();
+    
+    const anioVal = document.getElementById('anioSel').value;
+    const claveStorage = `bi_v_${anioVal}_data`;
+    
+    // Si el usuario no tiene datos previos en su navegador, intentamos cargar el JSON automático de GitHub
+    if (!localStorage.getItem(claveStorage)) {
+        try {
+            const nombreArchivo = `config_presupuesto_${anioVal}.json`;
+            const respuesta = await fetch(nombreArchivo);
+            
+            if (respuesta.ok) {
+                const datosJson = await respuesta.json();
+                localStorage.setItem(claveStorage, JSON.stringify(datosJson));
+                console.log(`¡Datos iniciales cargados automáticamente desde ${nombreArchivo}!`);
+            }
+        } catch (error) {
+            console.log("No se encontró una configuración JSON inicial en la raíz del servidor GitHub Pages. Iniciando en blanco.");
+        }
+    }
+    
     render();
 };
 </script>
