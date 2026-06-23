@@ -203,5 +203,61 @@
     "comentario": "Gastos Custodias pertenece a transporte\nGastos de Movilidad pertenece a Diego gonzales\nGastos de Comidas y Refrigerios  pertenece a Diego gonzales",
     "notasRubros": {}
   },
+  "5": {
+    "tP": 89012618.42999999,
+    "tR": 67684926.63166793,
+    "tc": 1182.81,
+    "rubros": [
+      {
+        "rubro": "Alquiler Máquinas y Equipos",
+        "p": 11195077.9,
+        "r": 242129.11499000812
+      },
+      {
+        "rubro": "Alquileres pagados",
+        "p": 18093625,
+        "r": 19178932.442130826
+      },
+      {
+        "rubro": "Beneficios Personal",
+        "p": 40552.07,
+        "r": 0
+      },
+      {
+        "rubro": "Descarga de Contenedores",
+        "p": 50339065,
+        "r": 44579221.34468246
+      },
+      {
+        "rubro": "Fletes Varios",
+        "p": 2761000,
+        "r": 908741.4657673365
+      },
+      {
+        "rubro": "Gastos Correspondencia",
+        "p": 20600,
+        "r": 0
+      },
+      {
+        "rubro": "Gastos de Comidas y Refrigerios",
+        "p": 140313.34,
+        "r": 169025.9126327246
+      },
+      {
+        "rubro": "Gastos de Embalaje",
+        "p": 5509986.3,
+        "r": 2606876.351464566
+      },
+      {
+        "rubro": "Gastos de Movilidad",
+        "p": 912398.8200000001,
+        "r": 0
+      }
+    ],
+    "comentario": "",
+    "notasRubros": {
+      "Gastos Correspondencia": "No corresponde a logistica"
+    }
+  },
   "pptoAnualFijo": 775653470
 }
